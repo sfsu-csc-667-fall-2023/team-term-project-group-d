@@ -11,6 +11,10 @@
     "server:dev:windows": "set NODE_ENV=development && nodemon ./backend/server.js",
     "build": "webpack",
     "build:dev": "webpack --watch",
+    "db:create": "node-pg-migrate create -- ",
+    "db:migrate": "node-pg-migrate up",
+    "db:rollback": "node-pg-migrate down",
+    "postinstall": "npm run db:migrate",
     "prepare": "husky install"
   },
   "keywords": [],
@@ -18,10 +22,14 @@
   "license": "ISC",
   "dependencies": {
     "cookie-parser": "^1.4.6",
+    "dotenv": "^16.3.1",
     "ejs": "^3.1.9",
     "express": "^4.18.2",
     "http-errors": "^2.0.0",
     "morgan": "^1.10.0",
+    "node-pg-migrate": "^6.2.2",
+    "pg": "^8.11.3",
+    "pg-promise": "^11.5.4",
     "prettier": "^3.0.3"
   },
   "devDependencies": {
