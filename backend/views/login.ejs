@@ -4,16 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Uno Login</title>
-    <link rel="stylesheet" href="/login.css">
+    <link rel="stylesheet" type="text/css" href="/styles/login.css">
 </head>
 <body>
-    <h1>Log in to The Uno and Only Uno</h1>
+    <header>
+        <h1>The Uno and Only Uno</h1>
+        <h2>Connect with friends<br> and play the best game since crazy 8's.</h2>
+    </header>
     <form action="/user/login" method="POST">
-        <label for="username">Username</label>
-        <input id="username" type="text" name="username">
-        <label for="password">Password</label>
-        <input type="password" name="password" id="password">
-        <button type="submit">Login</button>
+        
+        <input id="username" placeholder="Username or Email" type="text" name="username">
+        
+        <input type="password" placeholder="Password" name="password" id="password">
+        <button id="login-button" type="submit">Log In</button>
+        <a href="/">Forgot Password?</a>
+        <br>
+        <hr>
+        <button id="register-button" type="reset" onclick="location.href='/register'">Create New Account</button>
     </form>
 </body>
 </html>
