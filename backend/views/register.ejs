@@ -4,20 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Uno Register</title>
-    <link rel="stylesheet" href="/register.css">
+    <link rel="stylesheet" href="/styles/register.css">
 </head>
 <body>
-    <h1>Sign up to start playing Uno!</h1>
-    <form action="/user/register" method="POST">
-        <label for="username">Username</label>
-        <input id="username" type="text" name="username">
-        <label for="password">Password</label>
-        <input type="password" name="password" id="password">
-        <label for="confirm-password">Confirm Password</label>
-        <input type="password" name="confirmPassword" id="confirm-password">
-        <button type="submit" id="registerButton">Register</button>
-    </form>
-    
+    <div class="container">
+        <h1>Sign Up</h1>
+        <p>It's quick and easy.</p>
+        <hr>
+        <form action="/user/register" method="POST">
+            
+            <input id="username" placeholder="username" type="text" name="username">
+            <input type="password" placeholder="password" name="password" id="password">
+            <input type="password" placeholder="confirm password" name="confirmPassword" id="confirm-password">
+            <p>Already have an Account? <a href="/login">Login here</a> </p>
+           
+            <button type="submit" id="registerButton">Sign Up</button>
+        </form>
+    </div>
     <script>
         document.getElementById("registerButton").addEventListener("click", function(event) {
             var password = document.getElementById("password").value;

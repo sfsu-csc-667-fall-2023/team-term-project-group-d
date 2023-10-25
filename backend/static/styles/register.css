@@ -1,0 +1,58 @@
+.container {
+  margin: auto;
+  height: 55vh;
+  width: 30%;
+  border-radius: 5px;
+  box-shadow: 0px 0px 6px 0px rgba(0, 0, 0, 0.75);
+  padding: 30px;
+  margin-top: 10%;
+}
+
+h1 {
+  color: red;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+}
+
+form input {
+  width: 80%;
+  height: 40px;
+  border-radius: 5px;
+  border: 1px solid black;
+  margin: 5px;
+  padding: 5px;
+  font-size: 20px;
+  padding-left: 20px;
+}
+
+hr {
+  width: 100%;
+}
+
+form button {
+  height: 40px;
+  border-radius: 5px;
+  width: 30%;
+  background-color: red;
+  color: white;
+  font-weight: 600;
+  margin: auto;
+  margin-top: 15px;
+}
+
+a {
+  text-decoration: none;
+  color: blue;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+form p {
+  margin-top: 20px;
+  text-align: center;
+}
