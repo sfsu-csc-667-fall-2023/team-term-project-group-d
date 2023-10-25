@@ -111,3 +111,14 @@ button {
     margin-top: 0;
   }
 }
+
+@media screen and (max-width: 570px) {
+  header {
+    display: none;
+  }
+  form {
+    margin-top: 20%;
+    width: 50vw;
+    height: 50vh;
+  }
+}
