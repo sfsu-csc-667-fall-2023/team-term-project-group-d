@@ -8,13 +8,12 @@
 </head>
 <body>
     <h1>Sign up to start playing Uno!</h1>
+    <p>It's quick and easy.</p>
     <form action="/user/register" method="POST">
-        <label for="username">Username</label>
-        <input id="username" type="text" name="username">
-        <label for="password">Password</label>
-        <input type="password" name="password" id="password">
-        <label for="confirm-password">Confirm Password</label>
-        <input type="password" name="confirmPassword" id="confirm-password">
+        
+        <input id="username" placeholder="username" type="text" name="username">
+        <input type="password" placeholder="password" name="password" id="password">
+        <input type="password" placeholder="confirm password" name="confirmPassword" id="confirm-password">
         <button type="submit" id="registerButton">Register</button>
     </form>
     

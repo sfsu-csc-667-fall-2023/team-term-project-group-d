@@ -7,18 +7,20 @@
     <link rel="stylesheet" type="text/css" href="/styles/login.css">
 </head>
 <body>
-    <h1>The Uno and Only Uno</h1>
-    <h2>Connect with friends<br> and play the best game since crazy 8's.</h2>
+    <header>
+        <h1>The Uno and Only Uno</h1>
+        <h2>Connect with friends<br> and play the best game since crazy 8's.</h2>
+    </header>
     <form action="/user/login" method="POST">
         
-        <input id="username" placeholder="username or email" type="text" name="username">
+        <input id="username" placeholder="Username or Email" type="text" name="username">
         
-        <input type="password" placeholder="password" name="password" id="password">
+        <input type="password" placeholder="Password" name="password" id="password">
         <button id="login-button" type="submit">Log In</button>
         <a href="/">Forgot Password?</a>
         <br>
         <hr>
-        <button id="register-button">Create New Account</button>
+        <button id="register-button" type="reset" onclick="location.href='/register'">Create New Account</button>
     </form>
 </body>
 </html>
