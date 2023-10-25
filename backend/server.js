@@ -18,6 +18,7 @@ app.use(express.static(path.join(__dirname, "static")));
 
 // Route Imports
 const rootRoutes = require("./routes/root");
+const userRouter = require("./routes/user");
 
 // Middleware Imports
 const { displayErrors } = require("./middleware/display-errors");
@@ -39,6 +40,7 @@ if (process.env.NODE_ENV == "development") {
 
 // Mount Routes
 app.use("/", rootRoutes);
+app.use("/user", userRouter);
 
 app.listen(PORT, () => {
   console.log(`Server started on port ${PORT}`);
