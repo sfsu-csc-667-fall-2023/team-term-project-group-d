@@ -4,6 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "format": "prettier --check .",
+    "format:fix": "prettier --write .",
     "start": "node ./backend/server.js",
     "start:dev:linux": "concurrently \"npm:server:dev:linux\" \"npm:build:dev\"",
     "start:dev:windows": "concurrently \"npm:server:dev:windows\" \"npm:build:dev\"",
