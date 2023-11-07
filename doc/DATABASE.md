@@ -10,8 +10,8 @@ This table holds required information for each `user` who has created an account
 
 | Field         | Type         | Description     | Requirements     |
 | ------------- | ------------ | --------------- | ---------------- |
-| id            | serial       | unique id       | PK, Serial       |
-| username      | varchar(20)  |                 | Unique, Not Null |
+| id            | serial       | unique id       | PK               |
+| username      | varchar(255) |                 | Unique, Not Null |
 | email         | varchar(254) |                 | Unique, Not Null |
 | password      | varchar(255) | hashed password | Not Null         |
 | salt          | varchar(255) |                 |                  |
@@ -23,19 +23,19 @@ This table holds required information for each `user` who has created an account
 
 This table holds information for each `game` that a **logged in**`user` creates
 
-| Field       | Type        | Description                                          | Requirements |
-| ----------- | ----------- | ---------------------------------------------------- | ------------ |
-| id          | serial      | unique id                                            | PK           |
-| card_id     | int         | id for the card currently on top of the discard pile | FK           |
-| player_id   | int         | id for player whose turn it is                       | FK           |
-| max_players | int         | max number of players allowed in game                | Range [2,5]  |
-| lobby_size  | int         | current lobby size                                   | Range [1,5]  |
-| name        | varchar(15) | name of game (for searching)                         | Unique       |
-| password    | varchar(20) | password to enter game                               |              |
-| direction   | enum        | turn direction                                       |              |
-| active      | bool        | is the game active or not                            | Not Null     |
-| created_at  | timestamp   |                                                      | Not Null     |
-| updated_at  | timestamp   |                                                      | Not Null     |
+| Field       | Type         | Description                                          | Requirements |
+| ----------- | ------------ | ---------------------------------------------------- | ------------ |
+| id          | serial       | unique id                                            | PK           |
+| card_id     | int          | id for the card currently on top of the discard pile | FK           |
+| player_id   | int          | id for player whose turn it is                       | FK           |
+| max_players | int          | max number of players allowed in game                | Range [2,5]  |
+| lobby_size  | int          | current lobby size                                   | Range [1,5]  |
+| name        | varchar(20)  | name of game (for searching)                         | Unique       |
+| password    | varchar(255) | password to enter game                               |              |
+| direction   | enum         | turn direction                                       |              |
+| active      | bool         | is the game active or not                            | Not Null     |
+| created_at  | timestamp    |                                                      | Not Null     |
+| updated_at  | timestamp    |                                                      | Not Null     |
 
 ### Game_Users
 
@@ -88,6 +88,7 @@ This is an enum for the possible card colors
 | green  |
 | blue   |
 | yellow |
+| wild   |
 
 ### Symbols
 
@@ -95,6 +96,7 @@ This is an enum for the possible card symbols
 
 | Value          |
 | -------------- |
+| zero           |
 | one            |
 | two            |
 | three          |
