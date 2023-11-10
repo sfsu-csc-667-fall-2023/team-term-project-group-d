@@ -89,4 +89,14 @@ const login = async (request, response) => {
   }
 };
 
-module.exports = { register, login };
+const logout = (request, response) => {
+  request.session.destroy((err) => {
+    if (err) {
+      console.error(err);
+      // Todo: A proper redirect or something after failed logout
+      response.send("Error occurred");
+    } else response.redirect("/login");
+  });
+};
+
+module.exports = { register, login, logout };
