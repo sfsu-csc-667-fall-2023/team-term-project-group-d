@@ -18,4 +18,11 @@ userRouter.post(
   login,
 );
 
+// For testing if sessions working
+userRouter.get("/checkauth", (req, res) => {
+  if (res.locals.user)
+    res.send("Logged in (client session exists for this user)");
+  else res.send("Not logged in (client session does NOT exist for this user)");
+});
+
 module.exports = userRouter;

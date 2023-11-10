@@ -61,6 +61,14 @@ const login = async (request, response) => {
       .oneOrNone(querySelectUser, [usernameOrEmail])
       .then(async (user) => {
         if (user && (await bcrypt.compare(password, user.password))) {
+          // TODO: Define all data from DB we want to pass to views on response.locals, or simply replace this all with 'isLoggedIn: true'
+          request.session.user = {
+            id: user.id,
+            username: user.username,
+            email: user.email,
+            profileImage: user.profile_image,
+          };
+
           // TODO: Redirect somewhere after successful login
           response.send("Logged in successful");
           // response.redirect('/some-view');
