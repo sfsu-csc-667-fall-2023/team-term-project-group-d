@@ -1,5 +1,8 @@
 const express = require("express");
+const sanitizeMiddleware = require("../middleware/sanitize-input");
 const userRouter = express.Router();
+const { register } = require("../controllers/userControllers");
+const { body } = require("express-validator");
 
 userRouter.post("/login", (request, response) => {
   const { username, password } = request.body;
@@ -12,16 +15,11 @@ userRouter.post("/login", (request, response) => {
   }
 });
 
-userRouter.post("/register", (request, response) => {
-  const { username, password } = request.body;
-  if (username && password) {
-    //TODO: check if this username is availabe in the db
-    //if it is then insert the new user into the db
-    //else username is not available then redirect to the registerError.ejs page
-    response.status(200).send({ username: username, password: password });
-  } else {
-    response.redirect("/register");
-  }
-});
+userRouter.post(
+  "/register",
+  [body("username").trim(), body("email").isEmail().normalizeEmail()],
+  sanitizeMiddleware,
+  register,
+);
 
 module.exports = userRouter;
