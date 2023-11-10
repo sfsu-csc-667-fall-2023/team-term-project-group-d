@@ -37,12 +37,12 @@ exports.up = (pgm) => {
     password: { type: "varchar(255)", notNull: true },
     salt: { type: "varchar(255)", notNull: true },
     profile_image: { type: "varchar(255)", notNull: true },
-    createdAt: {
+    created_at: {
       type: "timestamp",
       notNull: true,
       default: pgm.func("current_timestamp"),
     },
-    updatedAt: {
+    updated_at: {
       type: "timestamp",
       notNull: true,
       default: pgm.func("current_timestamp"),
@@ -73,12 +73,12 @@ exports.up = (pgm) => {
       notNull: true,
       default: pgm.func("current_timestamp"),
     },
-    updatedAt: {
+    updated_at: {
       type: "timestamp",
       notNull: true,
       default: pgm.func("current_timestamp"),
     },
-    startedAt: {
+    started_at: {
       type: "timestamp",
     },
   });
