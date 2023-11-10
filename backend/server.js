@@ -16,34 +16,12 @@ app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
 app.use(express.static(path.join(__dirname, "static")));
 
-// Postgres
-const db = require("./db/connection");
-
-// Express Session in Postgres
-const expressSession = require("express-session");
-const pgSession = require("connect-pg-simple")(expressSession);
-
-// Session Tracking
-app.use(
-  expressSession({
-    store: new pgSession({
-      pool: db.$pool,
-      createTableIfMissing: true,
-    }),
-    secret: process.env.COOKIE_SECRET || "csc667-team-d",
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      maxAge: parseInt(process.env.COOKIE_MAX_AGE) || 10 * 24 * 60 * 60 * 1000,
-    },
-  }),
-);
-
 // Route Imports
 const rootRoutes = require("./routes/root");
 const userRouter = require("./routes/user");
 
 // Middleware Imports
+const { sessionConfig, setLocalUserData } = require("./db/session");
 const { displayErrors } = require("./middleware/display-errors");
 
 if (process.env.NODE_ENV == "development") {
@@ -61,11 +39,9 @@ if (process.env.NODE_ENV == "development") {
   app.use(connectLiveReload());
 }
 
-app.use((req, res, next) => {
-  if (req.session.user) res.locals.user = req.session.user;
-
-  next();
-});
+// Session Setup (Start Middleware)
+app.use(sessionConfig);
+app.use(setLocalUserData);
 
 // Mount Routes
 app.use("/", rootRoutes);
