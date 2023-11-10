@@ -50,4 +50,35 @@ const register = async (request, response) => {
   }
 };
 
-module.exports = { register };
+const login = async (request, response) => {
+  const { usernameOrEmail, password } = request.body;
+
+  if (usernameOrEmail && password) {
+    const querySelectUser =
+      "SELECT * FROM users WHERE (username = $1 OR email = $1)";
+
+    await connection
+      .oneOrNone(querySelectUser, [usernameOrEmail])
+      .then(async (user) => {
+        if (user && (await bcrypt.compare(password, user.password))) {
+          // TODO: Redirect somewhere after successful login
+          response.send("Logged in successful");
+          // response.redirect('/some-view');
+        } else {
+          // TODO: Redirect somewhere after failed login
+          response
+            .status(401)
+            .send("Invalid username/email and password combination");
+          // response.render('login', { error: "Invalid username/email and password combination" });
+        }
+      })
+      .catch((err) => {
+        console.error(err);
+        response.redirect("/login");
+      });
+  } else {
+    response.redirect("/login");
+  }
+};
+
+module.exports = { register, login };
