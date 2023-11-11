@@ -6,32 +6,43 @@ const register = async (request, response) => {
   if (username && password && email) {
     const salt = "batteryAnt"; //TODO find out what this is for...
     const imageUrl = "/"; //TODO: change this to the default image url
-    //TODO: check if this username is availabe in the db
-    let selectUserQuery =
-      "SELECT * FROM users WHERE username = $1 OR email = $2";
+    const selectUserQuery =
+      "SELECT * FROM users WHERE username = $1 or email = $2";
     try {
       const result = await connection.query(selectUserQuery, [username, email]);
+      let errors = [];
       if (result.length > 0) {
-        console.log(
-          `username: ${username} is already taken or email ${email} is already in use`,
-        );
-        response.send({ error: "username or email is already taken" });
-        return;
+        result.forEach((user) => {
+          if (user.username === username) {
+            errors.push("username is taken");
+          }
+
+          if (user.email === email) {
+            errors.push("email is taken");
+          }
+        });
+
+        return response.render("register", {
+          errors: errors.join("\n"),
+        });
       }
     } catch (error) {
-      console.log("error checking if username is available: " + error);
+      console.error("What is this ", error);
     }
 
     bcrypt.hash(password, 10, async (err, hash) => {
       if (err) {
-        console.log("error hashing password: " + err);
-        response.redirect("/registerError");
+        console.error("error hashing password: " + err);
+
+        response.render("register", {
+          errors: "Internal Server Error",
+        });
       }
 
       const insertNewUserQuery =
         "INSERT INTO users (username, password, email, salt, profile_image, created_at) VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP)";
       try {
-        const result = await connection.query(insertNewUserQuery, [
+        await connection.query(insertNewUserQuery, [
           username,
           hash,
           email,
@@ -39,14 +50,17 @@ const register = async (request, response) => {
           imageUrl,
         ]);
 
-        response.status(201).redirect("/login");
+        response.redirect("/login");
       } catch (err) {
-        console.log("error inserting into db: " + err);
-        response.redirect("/registerError");
+        console.error("error inserting into db: " + err);
+
+        return response.render("register", {
+          errors: "Internal Server Error",
+        });
       }
     });
   } else {
-    response.redirect("/register");
+    return response.render("/register", { error: null });
   }
 };
 
