@@ -10,6 +10,7 @@ const sanitizeMiddleware = [
   (req, res, next) => {
     const errors = validationResult(req);
 
+    // TODO : determine which error it is, then send it back into the message
     if (!errors.isEmpty()) {
       console.error("errors found in input: " + JSON.stringify(errors));
 
