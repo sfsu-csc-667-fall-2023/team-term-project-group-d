@@ -12,7 +12,7 @@
         <p>It's quick and easy.</p>
         <hr>
         <form action="/user/register" method="POST">
-            
+
             <input id="username" placeholder="username" type="text" name="username">
             <input type="email" placeholder="email" name="email" id="email">
             <input type="password" placeholder="password" name="password" id="password">
@@ -21,19 +21,17 @@
            
             <button type="submit" id="registerButton">Sign Up</button>
         </form>
-        
+
+        <% if (typeof errors !== 'undefined' && errors !== null) { %>
+            <div class="errors-card">
+                <p class="error-msg"><%- errors.replace("\n", "<br>") %></p>
+            </div>
+        <% } %>
+
+        <div class="errors-card" id="match-password-card" style="display: none">
+            <p class="error-msg">Password and Confirm Password do not match</p>
+        </div>
     </div>
-    <script>
-        document.getElementById("registerButton").addEventListener("click", function(event) {
-            var password = document.getElementById("password").value;
-            var confirmPassword = document.getElementById("confirm-password").value;
-    
-            if (password !== confirmPassword) {
-                alert("Passwords do not match!");
-                event.preventDefault();
-            }
-        });
-    </script>
-    
+    <script src="/register.js"></script>
 </body>
 </html>

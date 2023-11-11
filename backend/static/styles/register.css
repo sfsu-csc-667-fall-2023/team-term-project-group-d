@@ -56,3 +56,18 @@ form p {
   margin-top: 20px;
   text-align: center;
 }
+
+.errors-card {
+  border-radius: 5px;
+  box-shadow: 0px 0px 6px 0px rgba(0, 0, 0, 0.75);
+  margin-top: 10%;
+  text-align: center;
+  background-color: blue;
+  padding: 10px;
+}
+
+.errors-card p {
+  color: white;
+  font-size: 23px;
+  font-weight: 600;
+}
