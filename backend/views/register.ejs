@@ -7,29 +7,27 @@
     <link rel="stylesheet" href="/styles/register.css">
 </head>
 <body>
+    <h1 id="game-title">UNO</h1>
     <div class="container">
-        <h1>Sign Up</h1>
-        <p>It's quick and easy.</p>
+        <h1 id="container-title">Create a new account</h1>
         <hr>
-        <form action="/user/register" method="POST">
+        <form action="/user/register" method="POST" autocomplete="off">
 
-            <input id="username" placeholder="username" type="text" name="username">
-            <input type="email" placeholder="email" name="email" id="email">
-            <input type="password" placeholder="password" name="password" id="password">
-            <input type="password" placeholder="confirm password" name="confirmPassword" id="confirm-password">
-            <p>Already have an Account? <a href="/login">Login here</a> </p>
-           
-            <button type="submit" id="registerButton">Sign Up</button>
+            <input id="username" placeholder="username" type="text" name="username" autocomplete="off" required>
+            <input type="email" placeholder="email" name="email" id="email" autocomplete="off" required>
+            <input type="password" placeholder="password" name="password" id="password" autocomplete="off" required>
+            <input type="password" placeholder="confirm password" name="confirmPassword" id="confirm-password" autocomplete="off" required>
+
+            <button type="submit" id="register-button">Sign Up</button>
+            <p><a href="/login">Already have an Account? </a> </p>
         </form>
 
-        <% if (typeof errors !== 'undefined' && errors !== null) { %>
-            <div class="errors-card">
-                <p class="error-msg"><%- errors.replace("\n", "<br>") %></p>
-            </div>
-        <% } %>
+        <div id="error-cards-container">
+            <% if (typeof errors !== 'undefined' && errors !== null) { %>
+                <%- include('partials/errorCard', { cardId: 'errors-card-1', display: 'block', message: errors })%>
+            <% } %>
 
-        <div class="errors-card" id="match-password-card" style="display: none">
-            <p class="error-msg">Password and Confirm Password do not match</p>
+            <%- include('partials/errorCard', { cardId: 'match-password-card', display: 'none', message: 'Password and Confirm Password do not match' })%>
         </div>
     </div>
     <script src="/register.js"></script>
