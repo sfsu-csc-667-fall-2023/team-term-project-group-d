@@ -31,7 +31,7 @@ hr {
   box-shadow: 0 0 6px 0 rgba(0, 0, 0, 0.75);
   margin: 1% auto;
   padding: 20px;
-  width: 20%;
+  max-width: 400px;
 }
 
 form {
@@ -116,7 +116,7 @@ form p {
   font-weight: 600;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 400px) {
   .container {
     width: 90%;
   }
