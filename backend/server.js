@@ -15,10 +15,11 @@ app.use(cookieParser());
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
 app.use(express.static(path.join(__dirname, "static")));
-
+app.use(express.static("frontend"));
 // Route Imports
 const rootRoutes = require("./routes/root");
 const userRouter = require("./routes/user");
+const gameRouter = require("./routes/game");
 
 // Middleware Imports
 const { displayErrors } = require("./middleware/display-errors");
@@ -42,6 +43,7 @@ if (process.env.NODE_ENV == "development") {
 app.use("/", rootRoutes);
 app.use("/user", userRouter);
 app.use("/test", require("./routes/test"));
+app.use("/game", gameRouter);
 
 app.listen(PORT, () => {
   console.log(`Server started on port ${PORT}`);
