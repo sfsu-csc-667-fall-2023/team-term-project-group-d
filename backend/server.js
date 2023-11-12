@@ -41,6 +41,7 @@ if (process.env.NODE_ENV == "development") {
 // Mount Routes
 app.use("/", rootRoutes);
 app.use("/user", userRouter);
+app.use("/test", require("./routes/test"));
 
 app.listen(PORT, () => {
   console.log(`Server started on port ${PORT}`);
