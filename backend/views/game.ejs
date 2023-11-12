@@ -1,0 +1,51 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Uno Game</title>
+    <link rel="stylesheet" type="text/css" href="/styles/game.css">
+</head>
+<body>
+  <div class="players-container">
+    <% playerList.forEach(player => { %>
+        <div class="opponent-container">
+            <p class="opponent-name">
+                <%= player.name %>
+            </p>
+            <img src="/images/cards/uno_back.png" alt="back of uno card" />
+            <p class="opponent-hand-size">
+                <%= player.handSize + "X" %>
+            </p>
+        </div>
+        
+    <% }); %>
+  </div>
+  <main>
+    <div class="deck-container">
+        <img src="/images/cards/uno_back.png" alt="back of uno card" />
+       
+    </div>
+    <div class="discard-container">
+        <img src="<%= '/images/cards/' + discardCard.color + '_' + discardCard.symbol + '.png' %>" alt="<%= discardCard.color + ' ' + discardCard.symbol %>" />
+    </div>
+    <div class="game-buttons">
+        <form action="/game" method="POST">
+            <button type="submit" name="draw" value="draw">Draw</button>
+            <button type="submit" name="uno" value="uno">Uno</button>
+            <button type="submit" name="pass" value="pass">Pass</button>
+        </form>
+    </div>
+  </main>
+  <div class="client-hand">
+    <% clientHand.forEach(card => { %>
+        <img src="<%= '/images/cards/' + card.color + '_' + card.symbol + '.png' %>" alt="<%= card.color + ' ' + card.symbol %>" />
+    <% }); %>
+    <p class="hand-size">
+        <%= clientHand.length %>
+    </p>
+  </div>
+</body>
+</html>
+
