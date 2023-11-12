@@ -14,10 +14,12 @@
             <p class="opponent-name">
                 <%= player.name %>
             </p>
-            <img src="/images/cards/uno_back.png" alt="back of uno card" />
-            <p class="opponent-hand-size">
-                <%= player.handSize + "X" %>
-            </p>
+            <div class="opponent-container-bottom">
+                <img src="/images/cards/uno_back.png" alt="back of uno card" />
+                <p class="opponent-hand-size">
+                    <%= player.handSize + "X" %>
+                </p>
+            </div>
         </div>
         
     <% }); %>
@@ -34,18 +36,34 @@
         <form action="/game" method="POST">
             <button type="submit" name="draw" value="draw">Draw</button>
             <button type="submit" name="uno" value="uno">Uno</button>
-            <button type="submit" name="pass" value="pass">Pass</button>
+            <button name="play-button" id="play-button">Play</button>
+        </form>
+       
+    </div>
+    <div id="chat-container">
+        <div id="chat-messages">
+            <% (chatMessages?.length > 0) ? chatMessages.forEach(message => { %>
+                <p class="chat-message">
+                    <%= message %>
+                </p>
+            <% }) : null %>
+        </div>
+        <form action="/game/sendMessage" method="POST">
+            <input type="text" name="message" placeholder="Type a message..." />
+            <button type="submit" name="sendMessage" value="send">Send</button>
         </form>
     </div>
   </main>
   <div class="client-hand">
     <% clientHand.forEach(card => { %>
-        <img src="<%= '/images/cards/' + card.color + '_' + card.symbol + '.png' %>" alt="<%= card.color + ' ' + card.symbol %>" />
+        <img class="hand-card" cardId=<%= card.id  %> src="<%= '/images/cards/' + card.color + '_' + card.symbol + '.png' %>" alt="<%= card.color + ' ' + card.symbol %>" />
     <% }); %>
     <p class="hand-size">
         <%= clientHand.length %>
     </p>
   </div>
+  <script src="/game.js"></script>
 </body>
+
 </html>
 
