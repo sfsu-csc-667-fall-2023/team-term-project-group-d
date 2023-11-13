@@ -14,9 +14,9 @@ const sanitizeMiddleware = [
     if (!errors.isEmpty()) {
       console.error("errors found in input: " + JSON.stringify(errors));
 
-      return res.render("register", {
-        errors: "MySQL or HTML is injected or Email is of incorrect form",
-      });
+      req.session.errors =
+        "MySQL or HTML is injected or Email is of incorrect form";
+      return res.redirect("/register");
     }
 
     next();
