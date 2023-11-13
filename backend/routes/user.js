@@ -1,25 +1,36 @@
 const express = require("express");
 const sanitizeMiddleware = require("../middleware/sanitize-input");
 const userRouter = express.Router();
-const { register } = require("../controllers/userControllers");
+const { register, login, logout } = require("../controllers/userControllers");
 const { body } = require("express-validator");
-
-userRouter.post("/login", (request, response) => {
-  const { username, password } = request.body;
-  if (username && password) {
-    //TODO: change this to actually checking the db to see if the user exists
-    //if the user does exist then set the cookie/session and redirect to the home page
-    response.status(200).send({ username: username, password: password });
-  } else {
-    response.redirect("/login");
-  }
-});
+const { reqLoggedIn, reqLoggedOut } = require("../middleware/auth-guard");
 
 userRouter.post(
   "/register",
   [body("username").trim(), body("email").isEmail().normalizeEmail()],
   sanitizeMiddleware,
+  reqLoggedOut,
   register,
 );
+
+userRouter.post(
+  "/login",
+  [body("usernameOrEmail").trim()],
+  sanitizeMiddleware,
+  reqLoggedOut,
+  login,
+);
+
+userRouter.post("/logout", reqLoggedIn, logout);
+
+// TODO: Remove /logout GET when we have a view with logout button calling /user/logout API route
+userRouter.get("/logout", reqLoggedIn, logout);
+
+// For testing if sessions working
+userRouter.get("/checkauth", (req, res) => {
+  if (res.locals.user)
+    res.send("Logged in (client session exists for this user)");
+  else res.send("Not logged in (client session does NOT exist for this user)");
+});
 
 module.exports = userRouter;

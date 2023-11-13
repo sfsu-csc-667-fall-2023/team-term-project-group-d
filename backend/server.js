@@ -21,6 +21,7 @@ const rootRoutes = require("./routes/root");
 const userRouter = require("./routes/user");
 
 // Middleware Imports
+const { sessionConfig, setLocalUserData } = require("./db/session");
 const { displayErrors } = require("./middleware/display-errors");
 
 if (process.env.NODE_ENV == "development") {
@@ -37,6 +38,10 @@ if (process.env.NODE_ENV == "development") {
 
   app.use(connectLiveReload());
 }
+
+// Session Setup (Start Middleware)
+app.use(sessionConfig);
+app.use(setLocalUserData);
 
 // Mount Routes
 app.use("/", rootRoutes);
