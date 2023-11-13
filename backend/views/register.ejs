@@ -23,7 +23,7 @@
         </form>
 
         <div id="error-cards-container">
-            <% if (typeof errors !== 'undefined' && errors !== null) { %>
+            <% if (errors) { %>
                 <%- include('partials/errorCard', { cardId: 'errors-card-1', display: 'block', message: errors })%>
             <% } %>
 

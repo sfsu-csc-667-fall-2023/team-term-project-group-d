@@ -34,6 +34,7 @@ hr {
   max-width: 400px;
 }
 
+/* Form Styling */
 form {
   display: flex;
   flex-direction: column;
@@ -65,12 +66,20 @@ form button {
   font-size: 20px;
   margin-bottom: 2px;
   margin-top: 15px;
+  cursor: pointer;
 }
 
 form button:hover {
   background-color: #cc0000;
 }
 
+form p {
+  font-size: 20px;
+  margin-top: 10px;
+  text-align: center;
+}
+
+/* Anchor Styling */
 a {
   margin: 5px;
   text-decoration: none;
@@ -81,12 +90,7 @@ a:hover {
   color: darkblue;
 }
 
-form p {
-  font-size: 20px;
-  margin-top: 10px;
-  text-align: center;
-}
-
+/* Error card styling */
 #error-cards-container {
   margin-top: 10px;
 }
@@ -102,12 +106,16 @@ form p {
 }
 
 .close-btn {
+  font-weight: bolder;
+  font-size: 20px;
   position: absolute;
-  top: 5px;
+  top: 50%;
+  transform: translateY(-50%);
   left: 10px;
   cursor: pointer;
-  font-size: 18px;
   color: white;
+  background: transparent;
+  border: none;
 }
 
 .errors-card p {
