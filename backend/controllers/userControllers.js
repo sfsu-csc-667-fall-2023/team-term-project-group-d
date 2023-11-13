@@ -1,8 +1,8 @@
 const connection = require("../db/connection");
 const bcrypt = require("bcrypt");
 
-const register = async (request, response) => {
-  const { username, password, email } = request.body;
+const register = async (req, res) => {
+  const { username, password, email } = req.body;
   if (username && password && email) {
     const salt = "batteryAnt"; //TODO find out what this is for...
     const imageUrl = "/"; //TODO: change this to the default image url
@@ -10,7 +10,7 @@ const register = async (request, response) => {
       "SELECT * FROM users WHERE username = $1 or email = $2";
     try {
       const result = await connection.query(selectUserQuery, [username, email]);
-      let errors = [];
+      const errors = [];
       if (result.length > 0) {
         result.forEach((user) => {
           if (user.username === username) {
@@ -22,21 +22,22 @@ const register = async (request, response) => {
           }
         });
 
-        return response.render("register", {
-          errors: errors.join("\n"),
-        });
+        req.session.errors = errors.join("\n");
+        return res.redirect("/register");
       }
     } catch (error) {
-      console.error("What is this ", error);
+      console.error(error);
+
+      req.session.errors = "Internal Server Errors";
+      return res.redirect("/register");
     }
 
     bcrypt.hash(password, 10, async (err, hash) => {
       if (err) {
         console.error("error hashing password: " + err);
 
-        response.render("register", {
-          errors: "Internal Server Error",
-        });
+        req.session.errors = "Internal Server Errors";
+        return res.redirect("/register");
       }
 
       const insertNewUserQuery =
@@ -50,22 +51,22 @@ const register = async (request, response) => {
           imageUrl,
         ]);
 
-        response.redirect("/login");
+        res.redirect("/login");
       } catch (err) {
         console.error("error inserting into db: " + err);
 
-        return response.render("register", {
-          errors: "Internal Server Error",
-        });
+        req.session.errors = "Internal Server Error";
+        return res.redirect("/register");
       }
     });
   } else {
-    return response.render("/register", { error: null });
+    req.session.errors = null;
+    return res.redirect("/register");
   }
 };
 
-const login = async (request, response) => {
-  const { usernameOrEmail, password } = request.body;
+const login = async (req, res) => {
+  const { usernameOrEmail, password } = req.body;
 
   if (usernameOrEmail && password) {
     const querySelectUser =
@@ -76,7 +77,7 @@ const login = async (request, response) => {
       .then(async (user) => {
         if (user && (await bcrypt.compare(password, user.password))) {
           // TODO: Define all data from DB we want to pass to views on response.locals, or simply replace this all with 'isLoggedIn: true'
-          request.session.user = {
+          req.session.user = {
             id: user.id,
             username: user.username,
             email: user.email,
@@ -84,22 +85,21 @@ const login = async (request, response) => {
           };
 
           // TODO: Redirect somewhere after successful login
-          response.send("Logged in successful");
+          res.send("Logged in successful");
           // response.redirect('/some-view');
         } else {
           // TODO: Redirect somewhere after failed login
-          response
-            .status(401)
-            .send("Invalid username/email and password combination");
-          // response.render('login', { error: "Invalid username/email and password combination" });
+          req.session.errors = "Invalid username or password";
+          res.redirect("/login");
         }
       })
       .catch((err) => {
         console.error(err);
-        response.redirect("/login");
+        res.redirect("/login");
       });
   } else {
-    response.redirect("/login");
+    req.session.errors = "Must provide both username/email and password";
+    res.redirect("/login");
   }
 };
 
