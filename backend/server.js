@@ -16,6 +16,7 @@ app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
 app.use(express.static(path.join(__dirname, "static")));
 app.use(express.static("frontend"));
+
 // Route Imports
 const rootRoutes = require("./routes/root");
 const userRouter = require("./routes/user");

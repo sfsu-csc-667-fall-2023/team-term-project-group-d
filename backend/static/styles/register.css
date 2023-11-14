@@ -1,58 +1,131 @@
-.container {
-  margin: auto;
-  height: 55vh;
-  width: 30%;
-  border-radius: 5px;
-  box-shadow: 0px 0px 6px 0px rgba(0, 0, 0, 0.75);
-  padding: 30px;
-  margin-top: 10%;
+* {
+  font-family: Calibri;
 }
 
-h1 {
+body {
+  background-color: #f2f2f2;
+  min-width: 400px;
+}
+
+#game-title {
   color: red;
+  text-align: center;
+  font-size: 50px;
 }
 
+#container-title {
+  text-align: center;
+  margin-top: 0;
+}
+
+hr {
+  width: 100%;
+  border: none;
+  border-top: 1px solid #ccc;
+  margin: 10px 0;
+}
+
+.container {
+  background-color: white;
+  border-radius: 5px;
+  box-shadow: 0 0 6px 0 rgba(0, 0, 0, 0.75);
+  margin: 1% auto;
+  padding: 20px;
+  max-width: 400px;
+}
+
+/* Form Styling */
 form {
   display: flex;
   flex-direction: column;
+  align-items: center;
+  text-align: center;
 }
 
 form input {
   width: 80%;
   height: 40px;
   border-radius: 5px;
-  border: 1px solid black;
+  border: 1px solid #ccc;
   margin: 5px;
-  padding: 5px;
   font-size: 20px;
-  padding-left: 20px;
+  padding: 5px 5px 5px 20px;
 }
 
-hr {
-  width: 100%;
+form input:focus {
+  outline: none;
 }
 
 form button {
   height: 40px;
-  border-radius: 5px;
-  width: 30%;
+  border-radius: 10px;
+  width: 50%;
   background-color: red;
   color: white;
   font-weight: 600;
-  margin: auto;
+  font-size: 20px;
+  margin-bottom: 2px;
   margin-top: 15px;
+  cursor: pointer;
 }
 
+form button:hover {
+  background-color: #cc0000;
+}
+
+form p {
+  font-size: 20px;
+  margin-top: 10px;
+  text-align: center;
+}
+
+/* Anchor Styling */
 a {
+  margin: 5px;
   text-decoration: none;
   color: blue;
 }
 
 a:hover {
-  text-decoration: underline;
+  color: darkblue;
 }
 
-form p {
-  margin-top: 20px;
+/* Error card styling */
+#error-cards-container {
+  margin-top: 10px;
+}
+
+.errors-card {
+  border-radius: 10px;
+  box-shadow: 0 0 6px 0 rgba(0, 0, 0, 0.75);
   text-align: center;
+  background-color: green;
+  margin-top: 10px;
+  padding: 5px;
+  position: relative;
+}
+
+.close-btn {
+  font-weight: bolder;
+  font-size: 20px;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 10px;
+  cursor: pointer;
+  color: white;
+  background: transparent;
+  border: none;
+}
+
+.errors-card p {
+  color: white;
+  font-size: 85%;
+  font-weight: 600;
+}
+
+@media (max-width: 400px) {
+  .container {
+    width: 90%;
+  }
 }
