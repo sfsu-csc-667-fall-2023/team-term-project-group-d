@@ -11,16 +11,20 @@
         <h1>The Uno and Only Uno</h1>
         <h2>Connect with friends<br> and play the best game since crazy 8's.</h2>
     </header>
-    <form action="/user/login" method="POST">
-        
-        <input id="username" placeholder="Username or Email" type="text" name="usernameOrEmail">
-        
-        <input type="password" placeholder="Password" name="password" id="password">
-        <button id="login-button" type="submit">Log In</button>
-        <a href="/">Forgot Password?</a>
-        <br>
-        <hr>
-        <button id="register-button" type="reset" onclick="location.href='/register'">Create New Account</button>
-    </form>
+        <form action="/user/login" method="POST">
+            <input id="username" placeholder="Username or Email" type="text" name="usernameOrEmail" required>
+
+            <input type="password" placeholder="Password" name="password" id="password" required>
+            <button id="login-button" type="submit">Log In</button>
+            <hr>
+            <button id="register-button" type="reset" onclick="location.href='/register'">Create New Account</button>
+
+            <div id="error-cards-container">
+                <% if (errors) { %>
+                    <%- include('partials/errorCard', { cardId: 'errors-card-1', display: 'flex', message: errors })%>
+                <% } %>
+            </div>
+            <script src="/login.js"></script>
+        </form>
 </body>
 </html>
