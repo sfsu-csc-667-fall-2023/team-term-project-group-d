@@ -1,35 +1,62 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Uno Register</title>
-    <link rel="stylesheet" href="/styles/register.css">
-</head>
-<body>
+    <link rel="stylesheet" href="/styles/register.css" />
+  </head>
+  <body>
     <h1 id="game-title">UNO</h1>
     <div class="container">
-        <h1 id="container-title">Create a new account</h1>
-        <hr>
-        <form action="/user/register" method="POST" autocomplete="off">
+      <h1 id="container-title">Create a new account</h1>
+      <hr />
+      <form action="/user/register" method="POST" autocomplete="off">
+        <input
+          id="username"
+          placeholder="username"
+          type="text"
+          name="username"
+          autocomplete="off"
+          required
+        />
+        <input
+          type="email"
+          placeholder="email"
+          name="email"
+          id="email"
+          autocomplete="off"
+          required
+        />
+        <input
+          type="password"
+          placeholder="password"
+          name="password"
+          id="password"
+          autocomplete="off"
+          required
+        />
+        <input
+          type="password"
+          placeholder="confirm password"
+          name="confirmPassword"
+          id="confirm-password"
+          autocomplete="off"
+          required
+        />
 
-            <input id="username" placeholder="username" type="text" name="username" autocomplete="off" required>
-            <input type="email" placeholder="email" name="email" id="email" autocomplete="off" required>
-            <input type="password" placeholder="password" name="password" id="password" autocomplete="off" required>
-            <input type="password" placeholder="confirm password" name="confirmPassword" id="confirm-password" autocomplete="off" required>
+        <button type="submit" id="register-button">Sign Up</button>
+        <p><a href="/login">Already have an Account? </a></p>
+      </form>
 
-            <button type="submit" id="register-button">Sign Up</button>
-            <p><a href="/login">Already have an Account? </a> </p>
-        </form>
+      <div id="error-cards-container">
+        <% if (errors) { %>
+        <%- include('partials/errorCard', { cardId: 'errors-card-1', display: 'block', message: errors })%>
+        <% } %>
 
-        <div id="error-cards-container">
-            <% if (errors) { %>
-                <%- include('partials/errorCard', { cardId: 'errors-card-1', display: 'block', message: errors })%>
-            <% } %>
-
-            <%- include('partials/errorCard', { cardId: 'match-password-card', display: 'none', message: 'Password and Confirm Password do not match' })%>
-        </div>
+        <%- include('partials/errorCard', { cardId: 'match-password-card', display: 'none', message: 'Password and Confirm Password do not match' })%>
+      </div>
     </div>
     <script src="/register.js"></script>
-</body>
+  </body>
 </html>
