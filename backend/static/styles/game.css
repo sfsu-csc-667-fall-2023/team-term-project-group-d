@@ -1,0 +1,95 @@
+body {
+  background-image: url(https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/UNO_Logo.svg/800px-UNO_Logo.svg.png);
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+.players-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+  border: 3px solid black;
+  background-color: blue;
+  width: 100%;
+  text-align: center;
+}
+
+.opponent-container {
+  display: flex;
+  flex-direction: column;
+
+  border: 3px solid black;
+  text-align: center;
+  height: 100%;
+  width: 20%;
+  background-color: red;
+}
+
+.opponent-container:nth-child(even) {
+  background-color: yellow;
+}
+
+.opponent-container-bottom {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  width: 100%;
+}
+
+.opponent-container > p.opponent-name {
+  font-size: 30px;
+  font-weight: bold;
+}
+
+.opponent-container img {
+  height: 120px;
+  width: 60px;
+}
+
+main {
+  height: 30%;
+  display: flex;
+  flex-direction: row;
+  margin: 10%;
+  justify-content: center;
+}
+
+.deck-container img {
+  height: 150px;
+  width: 100px;
+}
+
+.discard-container img {
+  height: 150px;
+  width: 100px;
+}
+
+.client-hand {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+  position: absolute;
+  height: 30%;
+  bottom: 0px;
+  width: 100%;
+  background-color: yellow;
+}
+
+#chat-messages {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  height: 80%;
+  width: 100%;
+  background-color: honeydew;
+  overflow-y: scroll;
+}
+
+#chat-container {
+  background-color: yellow;
+  border: 3px solid black;
+  padding: 5px;
+}
+
+.client-hand img.selected {
+  border: 3px solid green;
+}

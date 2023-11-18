@@ -20,6 +20,7 @@ app.use(express.static("frontend"));
 // Route Imports
 const rootRoutes = require("./routes/root");
 const userRouter = require("./routes/user");
+const gameRouter = require("./routes/game");
 
 // Middleware Imports
 const { sessionConfig, setLocalUserData } = require("./db/session");
@@ -47,6 +48,8 @@ app.use(setLocalUserData);
 // Mount Routes
 app.use("/", rootRoutes);
 app.use("/user", userRouter);
+app.use("/test", require("./routes/test"));
+app.use("/game", gameRouter);
 
 app.listen(PORT, () => {
   console.log(`Server started on port ${PORT}`);
