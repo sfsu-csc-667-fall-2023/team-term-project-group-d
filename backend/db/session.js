@@ -31,6 +31,13 @@ const setLocalUserData = (req, res, next) => {
     res.locals.errors = null;
   }
 
+  if (req.session.messages) {
+    res.locals.messages = req.session.messages;
+    delete req.session.messages;
+  } else {
+    res.locals.messages = null;
+  }
+
   next();
 };
 
