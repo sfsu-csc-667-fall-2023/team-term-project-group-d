@@ -66,3 +66,201 @@ header nav span {
   display: table-cell;
   vertical-align: middle;
 }
+
+/** Authorized homepage styling */
+#auth-container {
+  display: flex;
+  padding: 20px;
+}
+
+#left {
+  width: 70%;
+  display: flex;
+  flex-direction: column;
+}
+
+#right {
+  width: 30%;
+  display: flex;
+  flex-direction: column;
+}
+
+#create-game-button {
+  width: 100%;
+  height: 50px;
+  background-color: blue;
+  border: none;
+  border-radius: 10px;
+  color: white;
+  font-weight: 600;
+  font-size: 40px;
+  cursor: pointer;
+}
+
+#create-game-button:hover {
+  background-color: darkblue;
+}
+
+/** Game list Styling */
+#game-list-container {
+  background-color: lightgray;
+  width: 100%;
+  height: 800px;
+  overflow-y: scroll;
+}
+
+#game-list-container h1 {
+  text-align: center;
+}
+
+.available-game {
+  align-items: center;
+  box-sizing: border-box;
+  justify-content: space-between;
+  width: 100%;
+  height: 40px;
+  display: flex;
+  font-size: 20px;
+  padding-left: 10px;
+  border: black thin solid;
+  background-color: lightgray;
+}
+
+.available-game:nth-child(even) {
+  background-color: grey;
+}
+
+.game-info {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 70%;
+}
+
+.available-game button {
+  width: 50px;
+  cursor: pointer;
+  color: black;
+  font-size: 20px;
+}
+
+/** Chat Styling */
+#chat-container {
+  height: 100%;
+  width: 90%;
+  align-self: flex-end;
+  background-color: yellow;
+  border: 3px solid black;
+  padding: 5px;
+}
+
+#chat-messages {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  height: 80%;
+  width: 100%;
+  background-color: honeydew;
+  overflow-y: scroll;
+}
+
+.chat-form {
+  width: 100%;
+}
+
+.chat-form input {
+  width: 80%;
+  height: 50px;
+  border: black thin solid;
+  padding-left: 10px;
+  font-size: 20px;
+}
+
+.chat-form input:focus {
+  outline: none;
+}
+
+.chat-form button {
+  width: 15%;
+  height: 50px;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+/** Create Game Form Styling */
+#popup-container {
+  position: absolute;
+  z-index: 10;
+  background-color: green;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  flex-direction: column;
+  width: 80%;
+  border-radius: 5px;
+}
+
+#popup-container header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+  width: 100%;
+  align-items: center;
+}
+
+#popup-container h1 {
+  text-align: center;
+}
+
+#popup-container #close-popup {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 20px;
+  font-weight: bolder;
+  height: fit-content;
+  width: fit-content;
+  cursor: pointer;
+}
+
+#popup-container form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+#popup-container input {
+  width: 80%;
+  height: 40px;
+  border-radius: 5px;
+  margin: 5px;
+  font-size: 20px;
+  padding: 5px 5px 5px 20px;
+}
+
+#popup-container label {
+  font-size: 20px;
+  padding-left: 10px;
+  font-weight: 600;
+}
+
+#popup-container input[type="number"] {
+  width: 10%;
+  height: 40px;
+  border-radius: 5px;
+  margin: 5px;
+  font-size: 20px;
+  padding: 5px 5px 5px 20px;
+}
+
+#popup-container input:focus {
+  outline: none;
+}
+
+#popup-container button {
+  width: 80%;
+  height: 40px;
+  margin: 5px;
+  padding: 5px 5px 5px 20px;
+  font-size: 20px;
+}
