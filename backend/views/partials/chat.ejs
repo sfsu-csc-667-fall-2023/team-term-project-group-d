@@ -1,13 +1,19 @@
 <div id="chat-container">
-    <div id="chat-messages">
-        <% (chatMessages?.length > 0) ? chatMessages.forEach(message => { %>
-            <p class="chat-message">
-                <%= message %>
-            </p>
-        <% }) : null %>
-    </div>
-    <form action="/game/sendMessage" method="POST">
-        <input type="text" name="message" placeholder="Type a message..." />
-        <button type="submit" name="sendMessage" value="send">Send</button>
-    </form>
+  <div id="chat-messages">
+    <% (chatMessages?.length > 0) ? chatMessages.forEach(message => { %>
+    <p class="chat-message">
+      <%= message %>
+    </p>
+    <% }) : null %>
+  </div>
+  <form action="/game/sendMessage" method="POST" class="chat-form">
+    <input
+      type="text"
+      name="message"
+      placeholder="Type a message..."
+      autocomplete="false"
+      required
+    />
+    <button type="submit" name="sendMessage" value="send">Send</button>
+  </form>
 </div>

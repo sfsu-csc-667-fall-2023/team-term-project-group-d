@@ -15,6 +15,20 @@
           </div>
         </div>
 
+        <% if (user) { %>
+        <nav>
+          <li>
+            <span
+              ><a href="/user/logout"><h3>Signout</h3></a></span
+            >
+          </li>
+          <li>
+            <span
+              ><h3><%= user.username %></h3></span
+            >
+          </li>
+        </nav>
+        <%} else { %>
         <nav>
           <li>
             <span
@@ -27,7 +41,30 @@
             >
           </li>
         </nav>
+        <%} %>
       </div>
     </header>
+
+    <% if (user) { %>
+    <div id="auth-container">
+      <div id="left">
+        <div id="game-list-container">
+          <h1>Lobbies</h1>
+        </div>
+        <div id="create-game-button-container">
+          <button id="create-game-button">Create a game</button>
+        </div>
+      </div>
+      <div id="right">
+        <% if (messages || messages == null) {%>
+        <%- include('partials/chat', { chatMessages: messages } ) %>
+        <% }%>
+      </div>
+    </div>
+    <%} %>
+
+    <%- include('partials/createGame') %>
+
+    <script src="/home.js"></script>
   </body>
 </html>

@@ -84,22 +84,20 @@ const login = async (req, res) => {
             profileImage: user.profile_image,
           };
 
-          // TODO: Redirect somewhere after successful login
-          res.send("Logged in successful");
-          // response.redirect('/some-view');
+          req.session.messages = null;
+          return res.redirect("/");
         } else {
-          // TODO: Redirect somewhere after failed login
           req.session.errors = "Invalid username or password";
-          res.redirect("/login");
+          return res.redirect("/login");
         }
       })
       .catch((err) => {
         console.error(err);
-        res.redirect("/login");
+        return res.redirect("/login");
       });
   } else {
     req.session.errors = "Must provide both username/email and password";
-    res.redirect("/login");
+    return res.redirect("/login");
   }
 };
 
