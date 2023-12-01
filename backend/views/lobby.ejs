@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Home</title>
+    <link rel="stylesheet" type="text/css" href="/styles/home.css" />
+    <script src="/scripts/chat.js" defer></script>
+  </head>
+  <body>
+    <header>
+      <div class="inner">
+        <div class="name">
+          <div>
+            <a href="/"><h1>HOME</h1></a>
+          </div>
+        </div>
+
+        <% if (user) { %>
+        <nav>
+          <li>
+            <span
+              ><a href="/user/logout"><h3>Signout</h3></a></span
+            >
+          </li>
+          <li>
+            <span
+              ><h3><%= user.username %></h3></span
+            >
+          </li>
+        </nav>
+        <%} else { %>
+        <nav>
+          <li>
+            <span
+              ><a href="/login"><h3>LOGIN</h3></a></span
+            >
+          </li>
+          <li>
+            <span
+              ><a href="/register"><h3>REGISTER</h3></a></span
+            >
+          </li>
+        </nav>
+        <%} %>
+      </div>
+    </header>
+    <div id = "player-container">
+        <% players.forEach(player => { %>
+            <p class="player-name">
+                <%= player.name %>
+            </p>
+            <img
+              class="player-card"
+              
+              src=""
+              alt= <%= player.name %>
+            />
+            <% }); %>
+    </div>
+
+   
+    <%- include('partials/chat') %>
+    <button id="start-button">Start Game</button>
+    <script src="/lobby.js"></script>
+  </body>
+</html>
