@@ -86,4 +86,4 @@ const joinGame = async (req, res) => {
   }
 };
 
-module.exports = { playCard, getGame };
+module.exports = { playCard, getGame, joinGame };
