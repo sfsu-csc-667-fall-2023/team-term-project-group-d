@@ -20,11 +20,6 @@ app.set("view engine", "ejs");
 app.use(express.static(path.join(__dirname, "static")));
 app.use(express.static("frontend"));
 
-// Route Imports
-const rootRoutes = require("./routes/root");
-const userRouter = require("./routes/user");
-const gameRouter = require("./routes/game");
-
 // Middleware Imports
 const { sessionConfig, setLocalUserData } = require("./db/session");
 const { displayErrors } = require("./middleware/display-errors");
@@ -65,7 +60,7 @@ app.use("/", Routes.root);
 app.use("/user", Routes.user);
 app.use("/game", reqLoggedIn, Routes.game);
 app.use("/chat", reqLoggedIn, Routes.chat);
-//app.use("/lobby", reqLoggedIn, Routes.lobby);
+app.use("/lobby", reqLoggedIn, Routes.lobby);
 
 app.use("/test", require("./routes/test"));
 
