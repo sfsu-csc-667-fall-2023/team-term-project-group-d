@@ -20,6 +20,22 @@ const games = [
   },
 ];
 
+const joinGame = async (gameId) => {
+  try {
+    const res = await fetch("/game/join", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ gameId: gameId }),
+    });
+    const json = await res.json();
+    console.log(json);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 games.forEach((game) => {
   const outerDiv = document.createElement("div");
   outerDiv.classList.add("available-game");
@@ -34,8 +50,8 @@ games.forEach((game) => {
   lobbySizeParagraph.innerText = `Players : ${game.lobby_size}/${game.max_players}`;
 
   const joinButton = document.createElement("button");
-  joinButton.addEventListener("click", (e) => {
-    alert(`Joining game, game ${game.name}, id ${game.id}`);
+  joinButton.addEventListener("click", () => {
+    joinGame(game.id);
   });
   joinButton.innerText = "Join";
 
