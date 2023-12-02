@@ -41,14 +41,13 @@ const register = async (req, res) => {
       }
 
       const insertNewUserQuery =
-        "INSERT INTO users (username, password, email, salt, profile_image, created_at) VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP)";
+        "INSERT INTO users (username, password, email, salt) VALUES ($1, $2, $3, $4)";
       try {
         await connection.query(insertNewUserQuery, [
           username,
           hash,
           email,
           salt,
-          imageUrl,
         ]);
 
         res.redirect("/login");
