@@ -31,8 +31,11 @@
       </div>
       <div class="discard-container">
         <img
+          id="discard-card"
           src="<%= '/images/cards/' + discardCard.color + '_' + discardCard.symbol + '.png' %>"
           alt="<%= discardCard.color + ' ' + discardCard.symbol %>"
+          card-color="<%= discardCard.color %>"
+          card-symbol="<%= discardCard.symbol %>"
         />
       </div>
       <div class="game-buttons">
@@ -49,8 +52,11 @@
       <img
         class="hand-card"
         cardId="<%= card.id %>"
+        id = "<%= 'game#' + gameId + '-card#' + card.id %>"
         src="<%= '/images/cards/' + card.color + '_' + card.symbol + '.png' %>"
         alt="<%= card.color + ' ' + card.symbol %>"
+        card-color="<%= card.color %>"
+        card-symbol="<%= card.symbol %>"
       />
       <% }); %>
       <p class="hand-size">
