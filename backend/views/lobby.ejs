@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Home</title>
+    <title>Lobby</title>
     <link rel="stylesheet" type="text/css" href="/styles/home.css" />
     <script src="/scripts/chat.js" defer></script>
   </head>
@@ -45,27 +45,23 @@
         <%} %>
       </div>
     </header>
-
-    <% if (user) { %>
-    <div id="auth-container">
-      <div id="left">
-        <div id="game-list-container">
-          <h1>Lobbies</h1>
-        </div>
-        <div id="create-game-button-container">
-          <button id="create-game-button">Create a game</button>
-        </div>
-      </div>
-      <div id="right">
-        <% if (messages || messages == null) {%>
-          <%- include('partials/chat', { chatMessages: messages, roomId: 0 } ) %>
-          <% }%>
-      </div>
+    <div id = "player-container">
+        <% players.forEach(player => { %>
+            <p class="player-name">
+                <%= player.name %>
+            </p>
+            <img
+              class="player-card"
+              
+              src=""
+              alt= <%= player.name %>
+            />
+            <% }); %>
     </div>
-    <%} %>
 
-    <%- include('partials/createGame') %>
-
-    <script src="/home.js"></script>
+   
+    <%- include('partials/chat', { chatMessages: messages, roomId: gameId } ) %>
+    <button id="start-button">Start Game</button>
+    <script src="/lobby.js"></script>
   </body>
 </html>
