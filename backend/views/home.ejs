@@ -57,8 +57,8 @@
       </div>
       <div id="right">
         <% if (messages || messages == null) {%>
-        <%- include('partials/chat', { chatMessages: messages } ) %>
-        <% }%>
+          <%- include('partials/chat', { chatMessages: messages, roomId: 0 } ) %>
+          <% }%>
       </div>
     </div>
     <%} %>

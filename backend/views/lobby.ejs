@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Home</title>
+    <title>Lobby</title>
     <link rel="stylesheet" type="text/css" href="/styles/home.css" />
     <script src="/scripts/chat.js" defer></script>
   </head>
@@ -60,7 +60,7 @@
     </div>
 
    
-    <%- include('partials/chat') %>
+    <%- include('partials/chat', { chatMessages: messages, roomId: gameId } ) %>
     <button id="start-button">Start Game</button>
     <script src="/lobby.js"></script>
   </body>

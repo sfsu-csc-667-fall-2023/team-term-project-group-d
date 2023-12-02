@@ -1,3 +1,5 @@
+<input type="hidden" name="room-id" id="room-id" value="<%= roomId %>" />
+
 <div id="chat-container">
   <div id="chat-messages">
     <% (chatMessages?.length > 0) ? chatMessages.forEach(message => { %>
@@ -6,8 +8,7 @@
     </p>
     <% }) : null %>
   </div>
-  <form action="/game/sendMessage" method="POST" class="chat-form">
-    <input
+  <input
       type="text"
       id="message"
       name="message"
@@ -15,6 +16,32 @@
       autocomplete="false"
       required
     />
-    <button type="submit" name="sendMessage" value="send">Send</button>
-  </form>
+    <button type="button" onclick="sendMessage()">Send</button>
 </div>
+
+<script>
+  //Step 1 Chat: POST message to chat route
+  function sendMessage() {
+    const roomId = document.querySelector("#room-id").value;
+    console.log(roomId);
+    let message = document.querySelector("#message").value;
+    console.log(document.location.pathname);
+
+    if(document.location.pathname == '/'){
+        fetch(`/chat/${roomId}`, {
+          method: "post",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message }),
+      });
+    }
+    else{
+        fetch(`${document.location.pathname}/chat/`, {
+          method: "post",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message }),
+      });
+    }
+
+    document.querySelector("#message").value = "";
+  }
+</script>

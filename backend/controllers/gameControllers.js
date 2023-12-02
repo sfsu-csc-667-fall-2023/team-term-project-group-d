@@ -15,6 +15,7 @@ const getGame = async (req, res) => {
   //the object is an example of what the game row from the query should contain.
   //maybe need to use socketio to send the correct hand to each player?
   res.render("game.ejs", {
+    gameId: gameId,
     clientHand: [
       { color: "red", symbol: "draw_two", id: 1 },
       { color: "yellow", symbol: "three", id: 2 },

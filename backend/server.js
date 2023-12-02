@@ -58,9 +58,9 @@ const { reqLoggedIn } = require("./middleware/auth-guard");
 
 app.use("/", Routes.root);
 app.use("/user", Routes.user);
-app.use("/game", reqLoggedIn, Routes.game);
 app.use("/chat", reqLoggedIn, Routes.chat);
-app.use("/lobby", reqLoggedIn, Routes.lobby);
+app.use("/lobby", reqLoggedIn, Routes.lobby, Routes.chat);
+app.use("/game", reqLoggedIn, Routes.game, Routes.chat);
 
 app.use("/test", require("./routes/test"));
 
