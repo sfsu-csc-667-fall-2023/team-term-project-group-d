@@ -49,9 +49,8 @@
     <% if (user) { %>
     <div id="auth-container">
       <div id="left">
-        <div id="game-list-container">
-          <h1>Lobbies</h1>
-        </div>
+        <%- include('partials/lobbyList') %>
+
         <div id="create-game-button-container">
           <button id="create-game-button">Create a game</button>
         </div>
