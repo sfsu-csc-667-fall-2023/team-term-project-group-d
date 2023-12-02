@@ -57,7 +57,6 @@ playButton.addEventListener("click", async (event) => {
   const body = {
     cardId: selectedId,
     color: cardColor,
-    userId: 21, //TODO from session
   };
   const gameId = 3; //TODO change this to window.location.href.split("/")[3]; once the game is created by the createGame instead of the test controller.
   try {
