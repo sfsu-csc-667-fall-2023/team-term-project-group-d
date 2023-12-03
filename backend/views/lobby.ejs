@@ -6,6 +6,7 @@
     <title>Lobby</title>
     <link rel="stylesheet" type="text/css" href="/styles/home.css" />
     <script src="/scripts/chat.js" defer></script>
+    <script src="/scripts/lobby.js" defer></script>
   </head>
   <body>
     <header>
@@ -58,9 +59,15 @@
             />
             <% }); %>
     </div>
-
+    <input
+        type="hidden"
+        name="lobbyId"
+        id="lobbyId"
+        value="<%= lobbyId %>"
+      />
+    
    
-    <%- include('partials/chat', { chatMessages: messages, roomId: gameId } ) %>
+    <%- include('partials/chat', { chatMessages: messages, roomId: lobbyId } ) %>
     <button id="start-button">Start Game</button>
     <script src="/lobby.js"></script>
   </body>
