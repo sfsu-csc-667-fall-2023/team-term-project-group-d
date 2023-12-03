@@ -1,13 +1,10 @@
 const express = require("express");
 const router = express.Router();
-const { createHash } = require("crypto");
 
 const handler = (req, res) => {
   const { id: roomId } = req.params;
   const { message } = req.body;
-  const { email } = req.session.user;
-
-  console.log({ email });
+  const { image, username } = req.session.user;
 
   const io = req.app.get("io");
 
@@ -15,8 +12,8 @@ const handler = (req, res) => {
   console.log(roomId);
   //Step 2 Chat: Emit Socket IO Event with message
   io.emit(`chat:message:${roomId === undefined ? 0 : roomId}`, {
-    hash: createHash("sha256").update(email).digest("hex"),
-    from: req.session.user.username,
+    image: image,
+    from: username,
     timestamp: Date.now(),
     message,
   });

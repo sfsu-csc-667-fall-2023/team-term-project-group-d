@@ -48,13 +48,13 @@
     <div id = "player-container">
         <% players.forEach(player => { %>
             <p class="player-name">
-                <%= player.name %>
+                <%= player.username %>
             </p>
             <img
               class="player-card"
               
-              src=""
-              alt= <%= player.name %>
+              src= <%= player.image %>
+              alt= <%= player.username %>
             />
             <% }); %>
     </div>

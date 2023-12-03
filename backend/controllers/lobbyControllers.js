@@ -24,16 +24,16 @@ const getLobby = async (req, res) => {
   const { id: userId } = req.session.user;
 
   const getLobbyQuery = `SELECT id, name, active
-  FROM games g
-  WHERE (id = $1)
-  AND EXISTS (
-      SELECT game_id
-      FROM game_users
-      WHERE users_id = $2
-      AND game_id = $1
-  )`;
+    FROM games
+    WHERE (id = $1)
+    AND EXISTS (
+        SELECT game_id
+        FROM game_users
+        WHERE users_id = $2
+        AND game_id = $1
+    )`;
 
-  const playerListQuery = `SELECT u.username FROM users u 
+  const playerListQuery = `SELECT u.username, u.image FROM users u 
     LEFT JOIN game_users gu ON u.id = gu.users_id 
     WHERE (gu.game_id = $1)`;
 
