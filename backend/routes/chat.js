@@ -7,12 +7,8 @@ const handler = (req, res) => {
   const { message } = req.body;
   const { email } = req.session.user;
 
-  console.log({ email });
-
   const io = req.app.get("io");
 
-  console.log({ message });
-  console.log(roomId);
   //Step 2 Chat: Emit Socket IO Event with message
   io.emit(`chat:message:${roomId === undefined ? 0 : roomId}`, {
     hash: createHash("sha256").update(email).digest("hex"),
