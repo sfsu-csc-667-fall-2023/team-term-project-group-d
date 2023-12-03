@@ -10,24 +10,72 @@ const playCard = async (req, res) => {
 //returns the initial game state
 const getGame = async (req, res) => {
   const gameId = req.params.id;
-  //TODO: query db to get the game row by gameID
+  const userId = req.session.user.id;
+  let game, clientHand, playerData, currentCard;
 
-  //the object is an example of what the game row from the query should contain.
-  //maybe need to use socketio to send the correct hand to each player?
+  //get game data
+  const getGameQuery = `SELECT * FROM games WHERE id = $1`;
+  try {
+    game = await db.oneOrNone(getGameQuery, [gameId]);
+    if (!game) {
+      return res.status(404).send(`Game does not exist`);
+    }
+    console.log(JSON.stringify(game)); //debug
+  } catch (err) {
+    console.error("error getting game ", err);
+    return res.status(500).send(`Could not get game`);
+  }
+
+  //get the player's cards in hand (the colors and symbols and ids of the cards)
+  const getPlayerHandQuery = `SELECT * FROM cards WHERE id IN (SELECT card_id FROM game_cards WHERE game_id = $1 AND user_id = $2)`;
+  try {
+    clientHand = await db.any(getPlayerHandQuery, [gameId, userId]);
+    console.log("player hand is: " + JSON.stringify(clientHand)); //debug
+  } catch (err) {
+    console.error("error getting player hand ", err);
+    return res.status(500).send(`Could not get player hand`);
+  }
+
+  //get the number of cards in everyone's hand
+  const getPlayerData = `SELECT
+    u.username AS name,
+    u.id,
+    COUNT(gc.card_id) as handcount
+    FROM users u
+    JOIN game_cards gc on u.id = gc.user_id
+    WHERE gc.game_id = $1
+    AND u.id in (
+    SELECT user_id
+    FROM game_cards
+    WHERE game_id = $1 AND user_id != $2
+)
+    AND gc.discarded = false
+    GROUP BY u.id
+    ORDER BY u.id;`;
+
+  try {
+    playerData = await db.any(getPlayerData, [gameId, userId]);
+    console.log("player data is: " + JSON.stringify(playerData)); //debug
+  } catch (err) {
+    console.log("error getting player hand size ", err);
+    return res.status(500).send(`Could not get player hand size`);
+  }
+  //get the discard card's color and symbol
+  const getDiscardCard = `SELECT * FROM cards WHERE id = $1`;
+  try {
+    currentCard = await db.one(getDiscardCard, [game.current_card_id]);
+  } catch (err) {
+    console.log("error getting discard card ", err);
+    return res.status(500).send(`Could not get discard card`);
+  }
+
   res.render("game.ejs", {
     gameId: gameId,
-    gameName: "gameName",
-    clientHand: [
-      { color: "red", symbol: "draw_two", id: 1 },
-      { color: "yellow", symbol: "three", id: 2 },
-      { color: "red", symbol: "four", id: 3 },
-    ],
-    playerList: [
-      { name: "cleveland", handSize: 4, id: 1 },
-      { name: "Evan", handSize: 5, id: 2 },
-      { name: "Caimin", handSize: 7, id: 3 },
-    ],
-    discardCard: { color: "red", symbol: "draw_two" },
+    gameName: game.name,
+    activePlayerId: game.current_player_id,
+    clientHand: clientHand,
+    playerList: playerData,
+    discardCard: currentCard,
     chatMessages: ["hey what is up bro!?"], //this message should display all player names in the game.
   });
 };
@@ -163,6 +211,23 @@ const createGame = async (req, res) => {
   }
 };
 
+const startGame = async (req, res) => {
+  const gameId = req.body.gameId;
+  const userId = req.session.user.id;
+  //TODO: check that the user is allowed to start this game
+  //user must be in the game_users that correspond to the game.
+
+  const startGameQuery = `CALL start_game($1)`;
+
+  try {
+    await db.none(startGameQuery, [gameId]);
+    req.app.get("io").emit("game-start", { gameId: gameId });
+  } catch (err) {
+    console.error("error starting game ", err);
+    return res.status(500).send(`Could not start game`);
+  }
+};
+
 const getMyGames = async (req, res) => {
   const { id: userId } = req.session.user;
 
@@ -183,4 +248,11 @@ const getMyGames = async (req, res) => {
   }
 };
 
-module.exports = { playCard, getGame, joinGame, createGame, getMyGames };
+module.exports = {
+  playCard,
+  getGame,
+  joinGame,
+  createGame,
+  getMyGames,
+  startGame,
+};
