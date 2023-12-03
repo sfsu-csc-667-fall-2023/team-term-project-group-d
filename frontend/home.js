@@ -30,8 +30,12 @@ const displayGameInList = (game) => {
   lobbySizeParagraph.innerText = `Players : ${game.player_count}/${game.max_players}`;
 
   const joinButton = document.createElement("button");
-  joinButton.addEventListener("click", () => {
-    joinGame(game.id);
+  joinButton.addEventListener("click", async () => {
+    if (game.has_password) {
+      generateProtectedGameForm(game.id, game.name);
+    } else {
+      await joinGame(game.id, "");
+    }
   });
   joinButton.innerText = "Join";
 
@@ -66,14 +70,14 @@ buttonListRefresh.addEventListener("click", async () => {
 });
 
 /// Join Game
-const joinGame = async (gameId) => {
+const joinGame = async (gameId, password) => {
   try {
     const res = await fetch(`/game/${gameId}/join`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ password: "" }),
+      body: JSON.stringify({ password }),
     });
 
     let message = await res.text();
@@ -84,6 +88,28 @@ const joinGame = async (gameId) => {
     console.log(error);
   }
 };
+
+const generateProtectedGameForm = async (id, name) => {
+  const title = document.getElementById("protected-game-form-title");
+  title.innerText = `Join Game : ${name}`;
+
+  const button = document.getElementById("protected-game-form-button");
+  button.addEventListener("click", async () => {
+    const password = document.getElementById("password").value;
+    await joinGame(id, password);
+  });
+
+  const formContainer = document.getElementById("protected-game-popup");
+  formContainer.style.display = "flex";
+};
+
+const closeProtectedGameFormButton = document.getElementById(
+  "close-protected-game-form",
+);
+closeProtectedGameFormButton.addEventListener("click", () => {
+  const createGameForm = document.getElementById("protected-game-popup");
+  createGameForm.style.display = "none";
+});
 
 const menuCreateGameButton = document.getElementById("create-game-button");
 menuCreateGameButton.addEventListener("click", () => {

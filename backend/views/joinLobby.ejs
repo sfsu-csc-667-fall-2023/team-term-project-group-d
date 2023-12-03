@@ -12,16 +12,14 @@
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({ password: "" })
+            body: JSON.stringify({ password: "" }),
           });
 
-          if (res.status != 200)
-            return window.location.href = '/';
+          if (res.status != 200) return (window.location.href = "/");
 
-          if (res.redirected)
-            return window.location.href = res.url;
+          if (res.redirected) return (window.location.href = res.url);
         } catch (error) {
-          return window.location.href = '/';
+          return (window.location.href = "/");
         }
       })();
     </script>
