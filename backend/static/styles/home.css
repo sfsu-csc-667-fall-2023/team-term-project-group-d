@@ -188,7 +188,7 @@ header nav span {
 }
 
 /** Create Game Form Styling */
-#popup-container {
+.popup {
   position: absolute;
   z-index: 10;
   background-color: green;
@@ -200,7 +200,7 @@ header nav span {
   border-radius: 5px;
 }
 
-#popup-container header {
+.popup header {
   display: flex;
   flex-direction: row;
   justify-content: space-evenly;
@@ -208,11 +208,11 @@ header nav span {
   align-items: center;
 }
 
-#popup-container h1 {
+.popup h1 {
   text-align: center;
 }
 
-#popup-container #close-popup {
+.popup #close-popup {
   background: none;
   border: none;
   color: white;
@@ -223,13 +223,13 @@ header nav span {
   cursor: pointer;
 }
 
-#popup-container form {
+.popup form {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-#popup-container input {
+.popup input {
   width: 80%;
   height: 40px;
   border-radius: 5px;
@@ -238,13 +238,13 @@ header nav span {
   padding: 5px 5px 5px 20px;
 }
 
-#popup-container label {
+.popup label {
   font-size: 20px;
   padding-left: 10px;
   font-weight: 600;
 }
 
-#popup-container input[type="number"] {
+.popup input[type="number"] {
   width: 10%;
   height: 40px;
   border-radius: 5px;
@@ -253,14 +253,26 @@ header nav span {
   padding: 5px 5px 5px 20px;
 }
 
-#popup-container input:focus {
+.popup input:focus {
   outline: none;
 }
 
-#popup-container button {
+.popup button {
   width: 80%;
   height: 40px;
   margin: 5px;
   padding: 5px 5px 5px 20px;
   font-size: 20px;
+}
+
+/* Protected Game Form Styling */
+.popup #close-protected-game-form {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 20px;
+  font-weight: bolder;
+  height: fit-content;
+  width: fit-content;
+  cursor: pointer;
 }
