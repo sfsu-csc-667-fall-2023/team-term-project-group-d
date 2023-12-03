@@ -87,8 +87,9 @@ const joinGame = async (req, res) => {
   }
 
   // Check password matches
-  if (lobby.password !== password && lobby.password !== null)
+  if (lobby.password !== password && lobby.password !== null) {
     return res.status(403).send(`Incorrect password for Lobby`);
+  }
 
   // Check lobby not full
   if (lobby.player_count >= lobby.max_players)
@@ -153,7 +154,7 @@ const createGame = async (req, res) => {
     const gameId = lobby.id;
     await db.none(joinLobbyQuery, [userId, gameId]);
 
-    return res.status(200).send(`User created and joined lobby [${gameId}]`);
+    return res.redirect(`/lobby/${gameId}`);
   } catch (err) {
     console.error("error adding user to lobby ", err);
     return res.status(500).send(`Could not add user to lobby`);

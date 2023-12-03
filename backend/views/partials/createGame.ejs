@@ -6,6 +6,7 @@
   <hr />
   <form action="/game/create" method="POST" autocomplete="off">
     <input
+      id="create-game-name"
       type="text"
       name="name"
       placeholder="Name of Game"
@@ -13,6 +14,7 @@
       required
     />
     <input
+      id="create-game-password"
       type="text"
       name="password"
       placeholder="Password"
@@ -20,6 +22,7 @@
     />
     <label>Max Number of Players</label>
     <input
+      id="create-game-max-players"
       type="number"
       value="2"
       name="max_players"

@@ -4,11 +4,26 @@
     <title>Joining Lobby</title>
   </head>
   <body>
-    <form id="joinForm" action="/game/<%= id %>/join" method="POST">
-      <input type="text" value="">
-    </form>
     <script>
-      document.getElementById('joinForm').submit();
+      (async () => {
+        try {
+          const res = await fetch(`/game/<%= id %>/join`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ password: "" })
+          });
+
+          if (res.status != 200)
+            return window.location.href = '/';
+
+          if (res.redirected)
+            return window.location.href = res.url;
+        } catch (error) {
+          return window.location.href = '/';
+        }
+      })();
     </script>
   </body>
 </html>
