@@ -50,6 +50,19 @@ app.set("io", io);
 
 io.on("connection", (socket) => {
   socket.join(socket.request.session.id);
+
+  if (socket.handshake.query !== undefined) {
+    // console.log(socket.request.session.user.username)
+    socket.join(socket.handshake.query.id);
+    io.to(socket.handshake.query.id).emit(
+      "lobby-join",
+      socket.request.session.user.username,
+    );
+    io.to(socket.handshake.query.id).emit(
+      "game-join",
+      socket.request.session.user.username,
+    );
+  }
 });
 
 // Mount Routes
