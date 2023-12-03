@@ -6,7 +6,7 @@ exports.up = (pgm) => {
   pgm.addColumn("users", {
     image: {
       type: "varchar(85)",
-      notNull: false,
+      notNull: true,
       default: "https://robohash.org/a1b2c3",
     },
   });
