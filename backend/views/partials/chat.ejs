@@ -23,10 +23,8 @@
   //Step 1 Chat: POST message to chat route
   function sendMessage() {
     const roomId = document.querySelector("#room-id").value;
-    console.log(roomId);
     let message = document.querySelector("#message").value;
-    console.log(document.location.pathname);
-
+    
     if(document.location.pathname == '/'){
         fetch(`/chat/${roomId}`, {
           method: "post",
