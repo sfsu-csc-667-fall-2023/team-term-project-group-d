@@ -93,9 +93,10 @@ main {
 }
 
 #chat-messages {
-  display: flex;
+  /* display: flex;
   flex-direction: column;
-  justify-content: flex-end;
+  justify-content: flex-end; 
+  TODO make it auto scroll*/
   height: 80%;
   width: 100%;
   background-color: honeydew;
