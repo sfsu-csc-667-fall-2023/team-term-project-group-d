@@ -16,6 +16,7 @@ const getGame = async (req, res) => {
   //maybe need to use socketio to send the correct hand to each player?
   res.render("game.ejs", {
     gameId: gameId,
+    gameName: "gameName",
     clientHand: [
       { color: "red", symbol: "draw_two", id: 1 },
       { color: "yellow", symbol: "three", id: 2 },
