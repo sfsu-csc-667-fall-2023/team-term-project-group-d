@@ -125,9 +125,10 @@ const joinGame = async (req, res) => {
 };
 
 const createGame = async (req, res) => {
-  const { name, password, max_players } = req.body;
+  let { name, password, max_players } = req.body;
   const { id: userId } = req.session.user;
 
+  password = password === "" ? null : password;
   const createLobbyQuery = `INSERT INTO games (name, password, max_players)
       VALUES ($1, $2, $3)
     RETURNING id`;
