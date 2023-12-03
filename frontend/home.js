@@ -74,7 +74,6 @@ const joinGame = async (gameId) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ password: "" }),
-      redirect: "follow",
     });
 
     let message = await res.text();
@@ -101,6 +100,11 @@ closeCreateGameFormButton.addEventListener("click", () => {
 const formCreateFormButton = document.getElementById("form-create-game");
 formCreateFormButton.addEventListener("click", async (e) => {
   e.preventDefault();
+
+  const name = document.getElementById("create-game-name").value;
+  const password = document.getElementById("create-game-password").value;
+  const max_players = document.getElementById("create-game-max-players").value;
+
   try {
     const res = await fetch("/game/create", {
       method: "POST",
