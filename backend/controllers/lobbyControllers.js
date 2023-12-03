@@ -23,15 +23,15 @@ const getLobby = async (req, res) => {
   const { id: gameId } = req.params;
   const { id: userId } = req.session.user;
 
-  const getLobbyQuery = `SELECT g.id, g.name, g.active
+  const getLobbyQuery = `SELECT id, name, active
     FROM games g
-    LEFT JOIN game_users gu ON g.id = gu.game_id
-    WHERE (g.id = $1)
-    AND g.id IN (
-      SELECT game_id
-      FROM game_users
-      WHERE users_id = $2
-    )`;
+    WHERE (id = $1)
+    AND EXISTS (
+        SELECT game_id
+        FROM game_users
+        WHERE users_id = $2
+        AND game_id = $1
+    );`;
 
   const playerListQuery = `SELECT u.username FROM users u 
     LEFT JOIN game_users gu ON u.id = gu.users_id 
@@ -56,7 +56,7 @@ const getLobby = async (req, res) => {
     const players = await db.any(playerListQuery, [gameId]);
 
     res.render("lobby.ejs", {
-      gameId: gameId,
+      lobbyId: gameId,
       players: players,
       chatMessages: ["hey what is up bro!?"],
     });
