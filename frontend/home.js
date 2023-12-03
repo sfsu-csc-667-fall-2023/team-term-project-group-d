@@ -31,7 +31,6 @@ const displayGameInList = (game) => {
 
   const joinButton = document.createElement("button");
   joinButton.addEventListener("click", async () => {
-    console.log(game);
     if (game.has_password) {
       generateProtectedGameForm(game.id, game.name);
     } else {
@@ -78,7 +77,7 @@ const joinGame = async (gameId, password) => {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ password: password }),
+      body: JSON.stringify({ password }),
     });
 
     let message = await res.text();
@@ -97,13 +96,11 @@ const generateProtectedGameForm = async (id, name) => {
   const button = document.getElementById("protected-game-form-button");
   button.addEventListener("click", async () => {
     const password = document.getElementById("password").value;
-    console.log(password);
     await joinGame(id, password);
   });
 
   const formContainer = document.getElementById("protected-game-popup");
   formContainer.style.display = "flex";
-  console.log("testing this thing");
 };
 
 const closeProtectedGameFormButton = document.getElementById(
