@@ -9,7 +9,6 @@ const chatSocket = io();
 chatSocket.on(
   `chat:message:${roomId}`,
   ({ hash, from, timestamp, message }) => {
-    console.log(roomId);
     const div = document.createElement("div");
     div.classList.add("message");
 
