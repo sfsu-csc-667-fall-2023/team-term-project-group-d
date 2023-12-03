@@ -9,14 +9,14 @@
     <% }) : null %>
   </div>
   <input
-      type="text"
-      id="message"
-      name="message"
-      placeholder="Type a message..."
-      autocomplete="false"
-      required
-    />
-    <button type="button" onclick="sendMessage()">Send</button>
+    type="text"
+    id="message"
+    name="message"
+    placeholder="Type a message..."
+    autocomplete="false"
+    required
+  />
+  <button type="button" onclick="sendMessage()">Send</button>
 </div>
 
 <script>
@@ -27,18 +27,17 @@
     let message = document.querySelector("#message").value;
     console.log(document.location.pathname);
 
-    if(document.location.pathname == '/'){
-        fetch(`/chat/${roomId}`, {
-          method: "post",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message }),
+    if (document.location.pathname == "/") {
+      fetch(`/chat/${roomId}`, {
+        method: "post",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message }),
       });
-    }
-    else{
-        fetch(`${document.location.pathname}/chat/`, {
-          method: "post",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message }),
+    } else {
+      fetch(`${document.location.pathname}/chat/`, {
+        method: "post",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message }),
       });
     }
 

@@ -57,13 +57,14 @@
       </div>
       <div id="right">
         <% if (messages || messages == null) {%>
-          <%- include('partials/chat', { chatMessages: messages, roomId: 0 } ) %>
-          <% }%>
+        <%- include('partials/chat', { chatMessages: messages, roomId: 0 } ) %>
+        <% }%>
       </div>
     </div>
-    <%} %>
 
     <%- include('partials/createGame') %>
+    <%- include('partials/protectedGameForm') %>
+    <%} %>
 
     <script src="/home.js"></script>
   </body>

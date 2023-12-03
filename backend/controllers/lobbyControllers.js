@@ -23,15 +23,15 @@ const getLobby = async (req, res) => {
   const { id: gameId } = req.params;
   const { id: userId } = req.session.user;
 
-  const getLobbyQuery = `SELECT g.id, g.name, g.active
-    FROM games g
-    LEFT JOIN game_users gu ON g.id = gu.game_id
-    WHERE (g.id = $1)
-    AND g.id IN (
+  const getLobbyQuery = `SELECT id, name, active
+  FROM games g
+  WHERE (id = $1)
+  AND EXISTS (
       SELECT game_id
       FROM game_users
       WHERE users_id = $2
-    )`;
+      AND game_id = $1
+  )`;
 
   const playerListQuery = `SELECT u.username FROM users u 
     LEFT JOIN game_users gu ON u.id = gu.users_id 
@@ -40,6 +40,7 @@ const getLobby = async (req, res) => {
   let lobby;
   try {
     lobby = await db.oneOrNone(getLobbyQuery, [gameId, userId]);
+    console.log(JSON.stringify(lobby));
 
     // if the user is not in the lobby, redirect to home page
     if (!lobby) return res.render("joinLobby", { id: gameId });
@@ -66,13 +67,14 @@ const getLobby = async (req, res) => {
   }
 };
 
+/**
+ * get lobbies (inactive games) the user is not in
+ * @returns games { id, name, max_players, player_count, has_password }
+ */
 const getLobbies = async (req, res) => {
   const { id: userId } = req.session.user;
 
-  const getLobbiesQuery =
-    // get lobbies (inactive games) the user is not in
-    // games { id, name, max_players, player_count, has_password }
-    `SELECT
+  const getLobbiesQuery = `SELECT
       g.id, g.name, g.max_players,
       COUNT(gu.users_id) AS player_count,
       CASE
