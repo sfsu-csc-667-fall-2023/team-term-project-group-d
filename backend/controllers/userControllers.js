@@ -1,5 +1,6 @@
 const connection = require("../db/connection");
 const bcrypt = require("bcrypt");
+const { createHash } = require("crypto");
 
 const register = async (req, res) => {
   const { username, password, email } = req.body;
@@ -32,7 +33,7 @@ const register = async (req, res) => {
       return res.redirect("/register");
     }
 
-    bcrypt.hash(password, 10, async (err, hash) => {
+    bcrypt.hash(password, 10, async (err, hashedPassword) => {
       if (err) {
         console.error("error hashing password: " + err);
 
@@ -40,14 +41,18 @@ const register = async (req, res) => {
         return res.redirect("/register");
       }
 
+      const profileImageHash = createHash("sha256").update(email).digest("hex"); // 64 char hash
+      const profileImageURL = `https://robohash.org/${profileImageHash}`; // 21 + 64 = 85 chars
+
       const insertNewUserQuery =
-        "INSERT INTO users (username, password, email, salt) VALUES ($1, $2, $3, $4)";
+        "INSERT INTO users (username, password, email, salt, image) VALUES ($1, $2, $3, $4, $5)";
       try {
         await connection.query(insertNewUserQuery, [
           username,
-          hash,
+          hashedPassword,
           email,
           salt,
+          profileImageURL,
         ]);
 
         res.redirect("/login");
@@ -80,6 +85,7 @@ const login = async (req, res) => {
             id: user.id,
             username: user.username,
             email: user.email,
+            image: user.image,
           };
 
           req.session.messages = null;
