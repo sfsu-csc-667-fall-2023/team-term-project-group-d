@@ -57,6 +57,7 @@ const getLobby = async (req, res) => {
     const players = await db.any(playerListQuery, [gameId]);
 
     res.render("lobby.ejs", {
+      gameName: lobby.name,
       gameId: gameId,
       players: players,
       chatMessages: ["hey what is up bro!?"],
