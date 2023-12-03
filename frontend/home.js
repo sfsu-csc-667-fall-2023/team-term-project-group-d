@@ -80,8 +80,12 @@ const joinGame = async (gameId, password) => {
       body: JSON.stringify({ password }),
     });
 
-    let message = await res.text();
-    console.log(message);
+    if (!res.ok) {
+      console.log(res);
+      const container = document.getElementById("error-message-container");
+      const errorMessage = document.getElementById("error-message-p");
+      errorMessage.innerText = await res.text();
+    }
 
     if (res.redirected) window.location.href = res.url;
   } catch (error) {
