@@ -16,10 +16,6 @@ const updateActiveSeat = async (userId, gameId) => {
     userId,
   ]);
 
-  //calculate next seat
-  //clockwise add
-  //counter clockwise substrack
-
   const addend = currentSeatandDirection.direction === "clockwise" ? 1 : -1;
   let newSeat = currentSeatandDirection.seat + addend;
 
