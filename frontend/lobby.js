@@ -1,10 +1,11 @@
+const gameId = Number(document.getElementById("game-id").value);
+
 //setup socket to listen for game start
 import { io } from "https://cdn.skypack.dev/socket.io-client"; //idk why this is necessary
-const socket = io();
+
+const socket = io({ query: { id: gameId } });
 
 socket.on("game-start", (data) => {
-  console.log("game started");
-  console.log(data);
   //transport the user to the game page
   window.location.href = "/game/" + data.gameId;
 });
