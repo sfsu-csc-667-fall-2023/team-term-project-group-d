@@ -49,6 +49,11 @@ io.engine.use(sessionConfig);
 app.set("io", io);
 
 io.on("connection", (socket) => {
+  if (socket.handshake.query != undefined) {
+    // join the game room
+    socket.join(socket.handshake.query.id + "");
+  }
+  //join your own room
   socket.join(socket.request.session.id);
 });
 

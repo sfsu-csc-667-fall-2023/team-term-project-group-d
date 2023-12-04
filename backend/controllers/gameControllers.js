@@ -221,7 +221,10 @@ const startGame = async (req, res) => {
 
   try {
     await db.none(startGameQuery, [gameId]);
-    req.app.get("io").emit("game-start", { gameId: gameId });
+    req.app
+      .get("io")
+      .to(gameId + "")
+      .emit("game-start", { gameId: gameId });
   } catch (err) {
     console.error("error starting game ", err);
     return res.status(500).send(`Could not start game`);
