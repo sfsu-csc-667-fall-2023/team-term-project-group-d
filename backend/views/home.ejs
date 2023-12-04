@@ -49,22 +49,22 @@
     <% if (user) { %>
     <div id="auth-container">
       <div id="left">
-        <div id="game-list-container">
-          <h1>Lobbies</h1>
-        </div>
+        <%- include('partials/lobbyList') %>
+
         <div id="create-game-button-container">
           <button id="create-game-button">Create a game</button>
         </div>
       </div>
       <div id="right">
         <% if (messages || messages == null) {%>
-          <%- include('partials/chat', { chatMessages: messages, roomId: 0 } ) %>
-          <% }%>
+        <%- include('partials/chat', { chatMessages: messages, roomId: 0 } ) %>
+        <% }%>
       </div>
     </div>
-    <%} %>
 
     <%- include('partials/createGame') %>
+    <%- include('partials/protectedGameForm') %>
+    <%} %>
 
     <script src="/home.js"></script>
   </body>

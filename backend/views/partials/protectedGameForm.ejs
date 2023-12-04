@@ -1,0 +1,21 @@
+<div class="popup" id="protected-game-popup" style="display: none">
+  <header>
+    <h1 id="protected-game-form-title"></h1>
+    <button id="close-protected-game-form">X</button>
+  </header>
+  <hr />
+  <form
+    id="protected-game-form"
+    onsubmit="event.preventDefault()"
+  >
+    <input
+      type="text"
+      placeholder="Password"
+      name="password"
+      id="password"
+      required
+    />
+
+    <button type="submit" id="protected-game-form-button">Join Game</button>
+  </form>
+</div>

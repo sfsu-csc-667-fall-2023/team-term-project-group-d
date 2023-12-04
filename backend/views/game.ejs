@@ -8,7 +8,11 @@
     <script src="/scripts/chat.js" defer></script>
     <script src="/scripts/games.js" defer></script>
   </head>
+
+
+
   <body>
+    <h1><%= gameName %></h1>
     <div class="players-container">
       <% playerList.forEach(player => { %>
       <div class="opponent-container">
@@ -18,7 +22,7 @@
         <div class="opponent-container-bottom">
           <img src="/images/cards/uno_back.png" alt="back of uno card" />
           <p class="opponent-hand-size">
-            <%= player.handSize + "X" %>
+            <%= player.handcount + "X" %>
           </p>
         </div>
       </div>
@@ -26,24 +30,26 @@
       <% }); %>
     </div>
     <main>
-      <div class="deck-container">
-        <img src="/images/cards/uno_back.png" alt="back of uno card" />
-      </div>
-      <div class="discard-container">
-        <img
-          id="discard-card"
-          src="<%= '/images/cards/' + discardCard.color + '_' + discardCard.symbol + '.png' %>"
-          alt="<%= discardCard.color + ' ' + discardCard.symbol %>"
-          card-color="<%= discardCard.color %>"
-          card-symbol="<%= discardCard.symbol %>"
-        />
-      </div>
-      <div class="game-buttons">
-        <form action="/game" method="POST">
-          <button type="submit" name="draw" value="draw">Draw</button>
-          <button type="submit" name="uno" value="uno">Uno</button>
-          <button name="play-button" id="play-button">Play</button>
-        </form>
+      <div id="main-left">
+        <div class="deck-and-discard">
+          <div class="deck-container">
+            <img src="/images/cards/uno_back.png" alt="back of uno card" />
+          </div>
+          <div class="discard-container">
+            <img
+              id="discard-card"
+              src="<%= '/images/cards/' + discardCard.color + '_' + discardCard.symbol + '.png' %>"
+              alt="<%= discardCard.color + ' ' + discardCard.symbol %>"
+              card-color="<%= discardCard.color %>"
+              card-symbol="<%= discardCard.symbol %>"
+            />
+          </div>
+        </div>
+        <div class="game-buttons">
+          <button id = "draw-button" type="submit" name="draw" value="draw">Draw</button>
+          <button id = "uno-button" type="submit" name="uno" value="uno">Uno</button>
+          <button id = "play-button" name="play-button">Play</button>
+        </div>
       </div>
       <%- include('partials/chat', { chatMessages: messages, roomId: gameId } ) %>
     </main>
@@ -52,7 +58,7 @@
       <img
         class="hand-card"
         cardId="<%= card.id %>"
-        id = "<%= 'game#' + gameId + '-card#' + card.id %>"
+        id="<%= 'game#' + gameId + '-card#' + card.id %>"
         src="<%= '/images/cards/' + card.color + '_' + card.symbol + '.png' %>"
         alt="<%= card.color + ' ' + card.symbol %>"
         card-color="<%= card.color %>"
