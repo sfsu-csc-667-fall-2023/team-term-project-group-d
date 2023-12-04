@@ -1,11 +1,6 @@
 const db = require("../db/connection");
 
 const updateActiveSeat = async (userId, gameId) => {
-  //Get seat of current player from game_users
-  //Get lobby size from games and direction
-  //Increment or decrement seat depending on direction
-  //Update seat in game_users
-
   const getTotalSeats = `SELECT COUNT(*) FROM game_users WHERE game_id = $1`;
   const getCurrentSeatandDirection = `SELECT game_users.seat, games.direction
    FROM game_users
@@ -15,61 +10,35 @@ const updateActiveSeat = async (userId, gameId) => {
   const updateCurrentPlayer = `UPDATE games SET current_player_id = (SELECT users_id FROM game_users WHERE seat = $1 AND game_id = $2) WHERE id = $2`;
 
   const totalSeats = Number((await db.one(getTotalSeats, [gameId])).count);
-  console.log(totalSeats);
-  console.log(userId);
+
   const currentSeatandDirection = await db.one(getCurrentSeatandDirection, [
     gameId,
     userId,
   ]);
-  console.log(currentSeatandDirection);
+
   //calculate next seat
   //clockwise add
   //counter clockwise substrack
 
   const addend = currentSeatandDirection.direction === "clockwise" ? 1 : -1;
   let newSeat = currentSeatandDirection.seat + addend;
-  console.log(typeof newSeat);
-  if (newSeat < 0) {
-    newSeat = totalSeats - 1;
+
+  if (newSeat < 1) {
+    newSeat += totalSeats;
   } else {
-    console.log("Before newseat :", newSeat);
-    console.log("Total Seats :", totalSeats);
     newSeat = newSeat > totalSeats ? newSeat - totalSeats : newSeat;
-    console.log("After newseat :", newSeat);
   }
 
   await db.none(updateCurrentPlayer, [newSeat, gameId]);
-  console.log("WE DID IT YAY"); //TODO Remove debug :(
 };
 
 const drawCards = async (currentPlayerId, gameId, drawNumber) => {
-  /**
-   * Query games_card table for count WHERE player_id IS null
-   * If game_cards count < drawNumber{
-   *    query game_cards count WHERE player_id IS -1
-   *    if(this.count < drawNumber){
-   *      display end of game
-   *    }
-   *    else{
-   *      updategameCards SET player_id = null WHERE player_id = -1
-   *    }
-   * }
-   * 
-   * grab top card of deck
-   * by order by random WHERE user_id = NULL
-   * UPDATE game_cards SET user_id = currentPlayerId
-   * WHERE game_id = game_id AND card_id = cardId
-
-   */
-
   const getDeckCountQuery = `SELECT COUNT(*) FROM game_cards WHERE game_id = $1 AND user_id IS NULL`;
 
   const deckCount = await db.oneOrNone(getDeckCountQuery, [gameId]);
 
-  console.log(deckCount.count);
-
   if (!deckCount || Number(deckCount.count) < drawNumber) {
-    const getDiscardCountQuery = `SELECT COUNT(*) FROM game_cards WHERE game_id = $1 AND user_id = -1`;
+    const getDiscardCountQuery = `SELECT COUNT(*) FROM game_cards WHERE game_id = $1 AND discarded = true`;
     const discardCount = await db.oneOrNone(getDiscardCountQuery, [
       gameId,
       currentPlayerId,
@@ -79,8 +48,7 @@ const drawCards = async (currentPlayerId, gameId, drawNumber) => {
       console.log("No more cards in discard pile or deck, ending game"); //TODO send message with socket io
       return;
     } else {
-      console.log("In restore deck");
-      const restoreDeckQuery = `UPDATE game_cards SET user_id = NULL WHERE user_id = -1 AND game_id = $1`;
+      const restoreDeckQuery = `UPDATE game_cards SET user_id = NULL, discarded = false WHERE ( discarded = true AND game_id = $1 )`;
       await db.none(restoreDeckQuery, [gameId]);
     }
   }
@@ -119,8 +87,6 @@ const isValidMove = async (color, symbol, gameId) => {
      WHERE g.id = $1`;
 
   const symbolAndColor = await db.one(activeCardAndColorQuery, [gameId]);
-  console.log(symbolAndColor);
-  console.log(symbol + " " + color);
   return (
     symbolAndColor.active_color === color || symbolAndColor.symbol === symbol
   );
@@ -128,9 +94,7 @@ const isValidMove = async (color, symbol, gameId) => {
 
 const isOutOfTurn = async (gameId, userId) => {
   const getActivePlayer = `SELECT current_player_id FROM games WHERE id = $1`;
-
   const activeId = await db.one(getActivePlayer, [gameId]);
-
   return activeId.current_player_id !== userId;
 };
 
@@ -180,7 +144,9 @@ const playCard = async (req, res) => {
   }
 
   const playCardQuery = `UPDATE games SET current_card_id = $1, active_color = $2 WHERE id = $3`;
-  const updatePlayerHandQuery = `UPDATE game_cards SET user_id = -1 WHERE game_id = $1 AND card_id = $2 AND user_id = $3 RETURNING card_id`;
+  const updatePlayerHandQuery = `UPDATE game_cards 
+  SET discarded = true
+  WHERE game_id = $1 AND card_id = $2 AND user_id = $3 RETURNING card_id`;
 
   try {
     const card = await db.oneOrNone(updatePlayerHandQuery, [
@@ -188,7 +154,6 @@ const playCard = async (req, res) => {
       cardId,
       userId,
     ]);
-    console.log(`$card: ${JSON.stringify(card)}`);
     //check if card played is in players hand
     if (!card) {
       return res.status(400).send("Don't cheat :/");
@@ -251,7 +216,6 @@ const playCard = async (req, res) => {
         const getCurrentPlayerQuery = `SELECT current_player_id FROM games WHERE id = $1`;
         const nextPlayerId = (await db.one(getCurrentPlayerQuery, [gameId]))
           .current_player_id;
-        console.log("next player id = ", nextPlayerId);
         await updateActiveSeat(nextPlayerId, gameId);
       } catch (error) {
         console.log(
