@@ -15,13 +15,13 @@
     <h1><%= gameName %></h1>
     <div class="players-container">
       <% playerList.forEach(player => { %>
-      <div class="opponent-container">
+      <div class="opponent-container" id="opponent-<%= player.id %>">
         <p class="opponent-name">
           <%= player.name %>
         </p>
         <div class="opponent-container-bottom">
           <img src="/images/cards/uno_back.png" alt="back of uno card" />
-          <p class="opponent-hand-size">
+          <p class="opponent-hand-size" id="hand-<%= player.id %>">
             <%= player.handcount + "X" %>
           </p>
         </div>
@@ -70,6 +70,7 @@
       </p>
     </div>
     <input type="hidden" name="room-id" id="game-id" value="<%= gameId %>" />
-    <script src="/game.js"></script>
+    <input type="hidden" name="client-id" id="client-id" value="<%= clientId %>" />
+    <script type="module" src="/game.js"></script>
   </body>
 </html>
