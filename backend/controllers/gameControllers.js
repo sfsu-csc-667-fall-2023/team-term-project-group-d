@@ -7,7 +7,11 @@ const updateActiveSeat = async (userId, gameId) => {
    JOIN games ON game_users.game_id = games.id
    WHERE game_users.game_id = $1 AND game_users.users_id = $2`;
 
-  const updateCurrentPlayer = `UPDATE games SET current_player_id = (SELECT users_id FROM game_users WHERE seat = $1 AND game_id = $2) WHERE id = $2`;
+  const updateCurrentPlayer = `UPDATE games
+   SET current_player_id =
+  (SELECT users_id FROM game_users WHERE seat = $1 AND game_id = $2)
+  WHERE id = $2
+  RETURNING current_player_id`;
 
   const totalSeats = Number((await db.one(getTotalSeats, [gameId])).count);
 
@@ -25,7 +29,8 @@ const updateActiveSeat = async (userId, gameId) => {
     newSeat = newSeat > totalSeats ? newSeat - totalSeats : newSeat;
   }
 
-  await db.none(updateCurrentPlayer, [newSeat, gameId]);
+  return (await db.one(updateCurrentPlayer, [newSeat, gameId]))
+    .current_player_id; //throws if no rows updated
 };
 
 const drawCards = async (currentPlayerId, gameId, drawNumber) => {
@@ -51,9 +56,19 @@ const drawCards = async (currentPlayerId, gameId, drawNumber) => {
 
   const drawCardsQuery = `UPDATE game_cards SET user_id = $1 
     WHERE game_id = $2 
-    AND card_id IN (SELECT card_id FROM game_cards WHERE user_id IS NULL ORDER BY RANDOM() LIMIT $3)`;
+    AND card_id IN (SELECT card_id FROM game_cards WHERE user_id IS NULL ORDER BY RANDOM() LIMIT $3 ) RETURNING card_id`;
 
-  await db.none(drawCardsQuery, [currentPlayerId, gameId, drawNumber]);
+  const drawnCards = await db.any(drawCardsQuery, [
+    currentPlayerId,
+    gameId,
+    drawNumber,
+  ]);
+  const getDrawnCardsQuery = `SELECT * FROM cards WHERE id IN ($1)`;
+  const drawnCardsData = await db.any(getDrawnCardsQuery, [
+    ...drawnCards.map((card) => card.card_id).join(","),
+  ]);
+  console.log("drawing cards: " + JSON.stringify(drawnCardsData));
+  return drawnCardsData;
 };
 
 const reverseDirection = async (gameId) => {
@@ -97,6 +112,7 @@ const isOutOfTurn = async (gameId, userId) => {
 const drawCard = async (req, res) => {
   const userId = req.session.user.id;
   const gameId = req.params.id;
+  let activePlayerId, drawnCard;
 
   if (await isOutOfTurn(gameId, userId)) {
     console.log("Player is trying to move out of turn");
@@ -104,14 +120,28 @@ const drawCard = async (req, res) => {
   }
 
   try {
-    await drawCards(userId, gameId, 1);
+    drawnCard = await drawCards(userId, gameId, 1);
   } catch (error) {
     console.log("Error in drawing card " + error);
     return res.status(500).send("Error in drawing card " + error);
   }
 
   try {
-    await updateActiveSeat(userId, gameId);
+    activePlayerId = await updateActiveSeat(userId, gameId);
+
+    req.app
+      .get("io")
+      .to(gameId + "")
+      .emit("card-drawn", {
+        gameId: gameId,
+        //TODO: must do two emits. One will send the card drawn to the player who drew it
+        //the other will send the updated hand count to all other players
+        clientId: userId,
+        activePlayerId: activePlayerId,
+        drawnSymbol: drawnCard[0].symbol,
+        drawnColor: drawnCard[0].color,
+        drawnId: drawnCard[0].id,
+      });
     return res.status(200).send();
   } catch (error) {
     console.log("Error in updating active seat " + error);
@@ -121,8 +151,10 @@ const drawCard = async (req, res) => {
 
 const playCard = async (req, res) => {
   let { cardId, color, symbol } = req.body;
+  console.log("symbol: ", symbol);
   const userId = req.session.user.id;
   const gameId = req.params.id;
+  let activePlayerId;
 
   if (await isOutOfTurn(gameId, userId)) {
     console.log("Player is trying to move out of turn");
@@ -180,7 +212,7 @@ const playCard = async (req, res) => {
   }
 
   try {
-    await updateActiveSeat(userId, gameId);
+    activePlayerId = await updateActiveSeat(userId, gameId);
   } catch (error) {
     console.log("Error in updating active seat " + error);
     return res.status(500).send("Error in updating active seat " + error);
@@ -212,7 +244,7 @@ const playCard = async (req, res) => {
         const getCurrentPlayerQuery = `SELECT current_player_id FROM games WHERE id = $1`;
         const nextPlayerId = (await db.one(getCurrentPlayerQuery, [gameId]))
           .current_player_id;
-        await updateActiveSeat(nextPlayerId, gameId);
+        activePlayerId = await updateActiveSeat(nextPlayerId, gameId);
       } catch (error) {
         console.log(
           "Could not get total seats or current seat and direction",
@@ -228,6 +260,17 @@ const playCard = async (req, res) => {
     default:
       break;
   }
+  req.app
+    .get("io")
+    .to(gameId + "")
+    .emit("card-played", {
+      gameId: gameId,
+      color: color,
+      symbol: symbol,
+      clientId: userId,
+      cardId: cardId,
+      activePlayerId: activePlayerId,
+    });
   return res.status(200).send("Success!");
 };
 
@@ -296,6 +339,7 @@ const getGame = async (req, res) => {
   res.render("game.ejs", {
     gameId: gameId,
     gameName: game.name,
+    clientId: userId,
     activePlayerId: game.current_player_id,
     clientHand: clientHand,
     playerList: playerData,
@@ -448,7 +492,7 @@ const startGame = async (req, res) => {
     req.app
       .get("io")
       .to(gameId + "")
-      .emit("game-start", { gameId: gameId });
+      .emit("game-start", { gameId: gameId, userId: userId });
   } catch (err) {
     console.error("error starting game ", err);
     return res.status(500).send(`Could not start game`);
