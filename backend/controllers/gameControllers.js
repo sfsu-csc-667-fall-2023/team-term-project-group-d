@@ -282,7 +282,7 @@ const playCard = async (req, res) => {
 
   //check the win condition
   try {
-    if (await isWin(gameId, userId)) {
+    if (!(await isWin(gameId, userId))) {
       req.app
         .get("io")
         .to(gameId + "")
@@ -522,7 +522,6 @@ const startGame = async (req, res) => {
 
 const getMyGames = async (req, res) => {
   const { id: userId } = req.session.user;
-
   // Get list of games (active) user is in
   const getMyGamesQuery = `SELECT g.id, g.name
     FROM games g

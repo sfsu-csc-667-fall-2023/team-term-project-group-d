@@ -50,10 +50,12 @@
     <div id="auth-container">
       <div id="left">
         <%- include('partials/lobbyList') %>
-
         <div id="create-game-button-container">
           <button id="create-game-button">Create a game</button>
         </div>
+      </div>
+      <div id="middle">
+        <%- include('partials/activeGamesList') %>
       </div>
       <div id="right">
         <% if (messages || messages == null) {%>

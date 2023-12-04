@@ -16,7 +16,7 @@ gameRouter.post("/create", createGame);
 
 gameRouter.post("/:id/join", joinGame);
 
-gameRouter.get("/mine", getMyGames);
+gameRouter.get("/getMyGames", getMyGames);
 
 gameRouter.get("/:id", getGame);
 
