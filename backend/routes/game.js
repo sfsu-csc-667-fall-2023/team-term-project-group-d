@@ -6,7 +6,6 @@ const {
   drawCard,
   joinGame,
   createGame,
-  joinGame,
   getMyGames,
   startGame,
 } = require("../controllers/gameControllers");
