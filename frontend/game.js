@@ -94,6 +94,16 @@ socket.on("card-drawn", (data) => {
 let selectedId;
 let selectedCardId;
 
+//show the first player to move
+const activePlayerId = document.getElementById("active-player-id").value;
+if (clientId === Number(activePlayerId)) {
+  document.getElementsByClassName("client-hand")[0].style.border =
+    "green solid 10px";
+} else {
+  document.getElementById(`opponent-${activePlayerId}`).style.border =
+    "yellow solid 3px";
+}
+
 //check if the card arg is allowed to be played
 const isLegalMove = (card) => {
   if (card.color === "wild") return true;
