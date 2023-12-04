@@ -13,7 +13,7 @@ socket.on("game-start", (data) => {
   shuffleSound.play();
   setTimeout(() => {
     window.location.href = "/game/" + data.gameId;
-  }, 2000);
+  }, 1500);
 });
 
 const startGame = async () => {

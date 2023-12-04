@@ -282,7 +282,7 @@ const playCard = async (req, res) => {
 
   //check the win condition
   try {
-    if (!(await isWin(gameId, userId))) {
+    if (await isWin(gameId, userId)) {
       req.app
         .get("io")
         .to(gameId + "")
