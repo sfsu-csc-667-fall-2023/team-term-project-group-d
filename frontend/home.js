@@ -82,9 +82,8 @@ const displayActiveGameInList = (game) => {
     if (game.has_password) {
       generateProtectedGameForm(game.id, game.name);
     } else {
-      await joinGame(game.id, "");
       // redirect to game page
-      window.href = `/game/${game.id}`;
+      window.location.href = `/game/${game.id}`;
     }
   });
   joinButton.innerText = "Rejoin";
@@ -96,7 +95,7 @@ const displayActiveGameInList = (game) => {
   innerDiv.appendChild(nameParagraph);
   outerDiv.appendChild(innerDiv);
   outerDiv.appendChild(joinButton);
-  outerDiv.appendChild(abandonButton);
+  // outerDiv.appendChild(abandonButton); third priority feature
 
   activeGameList.appendChild(outerDiv);
 };
