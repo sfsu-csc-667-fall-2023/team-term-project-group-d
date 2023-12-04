@@ -3,8 +3,9 @@ const gameRouter = express.Router();
 const {
   playCard,
   getGame,
-  createGame,
+  drawCard,
   joinGame,
+  createGame,
   getMyGames,
   startGame,
 } = require("../controllers/gameControllers");
@@ -18,6 +19,8 @@ gameRouter.post("/:id/join", joinGame);
 gameRouter.get("/mine", getMyGames);
 
 gameRouter.get("/:id", getGame);
+
+gameRouter.post("/:id/card/draw", drawCard);
 
 gameRouter.post("/startGame", startGame);
 

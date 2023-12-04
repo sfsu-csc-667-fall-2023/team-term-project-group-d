@@ -1,10 +1,234 @@
 const db = require("../db/connection");
 
-const playCard = async (req, res) => {
-  console.log("in playcard");
-  const { cardId, color, userId } = req.body;
+const updateActiveSeat = async (userId, gameId) => {
+  const getTotalSeats = `SELECT COUNT(*) FROM game_users WHERE game_id = $1`;
+  const getCurrentSeatandDirection = `SELECT game_users.seat, games.direction
+   FROM game_users
+   JOIN games ON game_users.game_id = games.id
+   WHERE game_users.game_id = $1 AND game_users.users_id = $2`;
+
+  const updateCurrentPlayer = `UPDATE games SET current_player_id = (SELECT users_id FROM game_users WHERE seat = $1 AND game_id = $2) WHERE id = $2`;
+
+  const totalSeats = Number((await db.one(getTotalSeats, [gameId])).count);
+
+  const currentSeatandDirection = await db.one(getCurrentSeatandDirection, [
+    gameId,
+    userId,
+  ]);
+
+  const addend = currentSeatandDirection.direction === "clockwise" ? 1 : -1;
+  let newSeat = currentSeatandDirection.seat + addend;
+
+  if (newSeat < 1) {
+    newSeat += totalSeats;
+  } else {
+    newSeat = newSeat > totalSeats ? newSeat - totalSeats : newSeat;
+  }
+
+  await db.none(updateCurrentPlayer, [newSeat, gameId]);
+};
+
+const drawCards = async (currentPlayerId, gameId, drawNumber) => {
+  const getDeckCountQuery = `SELECT COUNT(*) FROM game_cards WHERE game_id = $1 AND user_id IS NULL`;
+
+  const deckCount = await db.oneOrNone(getDeckCountQuery, [gameId]);
+
+  if (!deckCount || Number(deckCount.count) < drawNumber) {
+    const getDiscardCountQuery = `SELECT COUNT(*) FROM game_cards WHERE game_id = $1 AND discarded = true`;
+    const discardCount = await db.oneOrNone(getDiscardCountQuery, [
+      gameId,
+      currentPlayerId,
+    ]);
+    console.log(deckCount);
+    if (!discardCount || discardCount.count < drawNumber) {
+      console.log("No more cards in discard pile or deck, ending game"); //TODO send message with socket io
+      return;
+    } else {
+      const restoreDeckQuery = `UPDATE game_cards SET user_id = NULL, discarded = false WHERE ( discarded = true AND game_id = $1 )`;
+      await db.none(restoreDeckQuery, [gameId]);
+    }
+  }
+
+  const drawCardsQuery = `UPDATE game_cards SET user_id = $1 
+    WHERE game_id = $2 
+    AND card_id IN (SELECT card_id FROM game_cards WHERE user_id IS NULL ORDER BY RANDOM() LIMIT $3)`;
+
+  await db.none(drawCardsQuery, [currentPlayerId, gameId, drawNumber]);
+};
+
+const reverseDirection = async (gameId) => {
+  //SELECT current_direction of the game
+  //Then reverse the direction then update the game's direction to the reverse direction
+
+  const gameDirectionQuery = `UPDATE games
+   SET direction = (
+      CASE
+          WHEN (SELECT direction FROM games WHERE id = $1) = 'clockwise'::directions THEN 'counterclockwise'::directions
+          ELSE 'clockwise'::directions
+      END
+   )
+   WHERE id = $1`;
+
+  await db.none(gameDirectionQuery, [gameId]);
+};
+
+const isValidMove = async (color, symbol, gameId) => {
+  if (symbol === "wild" || symbol === "wild_draw_four") {
+    return true;
+  }
+
+  const activeCardAndColorQuery = `SELECT c.symbol, g.active_color 
+     FROM games g 
+     JOIN cards c ON g.current_card_id = c.id 
+     WHERE g.id = $1`;
+
+  const symbolAndColor = await db.one(activeCardAndColorQuery, [gameId]);
+  return (
+    symbolAndColor.active_color === color || symbolAndColor.symbol === symbol
+  );
+};
+
+const isOutOfTurn = async (gameId, userId) => {
+  const getActivePlayer = `SELECT current_player_id FROM games WHERE id = $1`;
+  const activeId = await db.one(getActivePlayer, [gameId]);
+  return activeId.current_player_id !== userId;
+};
+
+const drawCard = async (req, res) => {
+  const userId = req.session.user.id;
   const gameId = req.params.id;
-  console.log(cardId, color, userId, gameId);
+
+  if (await isOutOfTurn(gameId, userId)) {
+    console.log("Player is trying to move out of turn");
+    return res.status(400).send("It's not your turn bucko");
+  }
+
+  try {
+    await drawCards(userId, gameId, 1);
+  } catch (error) {
+    console.log("Error in drawing card " + error);
+    return res.status(500).send("Error in drawing card " + error);
+  }
+
+  try {
+    await updateActiveSeat(userId, gameId);
+    return res.status(200).send();
+  } catch (error) {
+    console.log("Error in updating active seat " + error);
+    return res.status(500).send("Error in updating active seat " + error);
+  }
+};
+
+const playCard = async (req, res) => {
+  let { cardId, color, symbol } = req.body;
+  const userId = req.session.user.id;
+  const gameId = req.params.id;
+
+  if (await isOutOfTurn(gameId, userId)) {
+    console.log("Player is trying to move out of turn");
+    return res.status(400).send("It's not your turn bucko");
+  }
+
+  try {
+    const isVaild = await isValidMove(color, symbol, gameId);
+    if (!isVaild) {
+      return res.status(400).send("Player move not valid \n");
+    }
+  } catch (error) {
+    console.log("Could not determine if valid move \n" + error);
+    return res.status(500).send("Could not determine if valid move \n" + error);
+  }
+
+  const playCardQuery = `UPDATE games SET current_card_id = $1, active_color = $2 WHERE id = $3`;
+  const updatePlayerHandQuery = `UPDATE game_cards 
+  SET discarded = true
+  WHERE game_id = $1 AND card_id = $2 AND user_id = $3 RETURNING card_id`;
+
+  try {
+    const card = await db.oneOrNone(updatePlayerHandQuery, [
+      gameId,
+      cardId,
+      userId,
+    ]);
+    //check if card played is in players hand
+    if (!card) {
+      return res.status(400).send("Don't cheat :/");
+    }
+
+    if (card.card_id !== Number(cardId)) {
+      return res.status(500).send("Something went terribly wrong ;(");
+    }
+  } catch (error) {
+    console.log("Could not update player hand", error);
+    return res.status(500).send(`Could not update player hand ${error}`);
+  }
+
+  try {
+    await db.none(playCardQuery, [cardId, color, gameId]);
+  } catch (error) {
+    console.log("Could not update active card", error);
+    return res.status(500).send(`Could not update active card ${error}`);
+  }
+
+  if (symbol === "reverse") {
+    try {
+      await reverseDirection(gameId);
+    } catch (error) {
+      console.log("Error reversing direction", error);
+      return res.status(500).send("Error reversing direction" + error);
+    }
+  }
+
+  try {
+    await updateActiveSeat(userId, gameId);
+  } catch (error) {
+    console.log("Error in updating active seat " + error);
+    return res.status(500).send("Error in updating active seat " + error);
+  }
+
+  switch (symbol) {
+    case "draw_two":
+      try {
+        const getCurrentPlayerQuery = `SELECT current_player_id FROM games WHERE id = $1`;
+        const currentPlayerId = await db.one(getCurrentPlayerQuery, [gameId]);
+        await drawCards(currentPlayerId.current_player_id, gameId, 2);
+      } catch (error) {
+        console.log("Error updating game_cards", error);
+        return res.status(500).send("Error updating game_cards " + error);
+      }
+      break;
+    case "wild_draw_four":
+      try {
+        const getCurrentPlayerQuery = `SELECT current_player_id FROM games WHERE id = $1`;
+        const currentPlayerId = await db.one(getCurrentPlayerQuery, [gameId]);
+        await drawCards(currentPlayerId.current_player_id, gameId, 4);
+      } catch (error) {
+        console.log("Error updating game_cards", error);
+        return res.status(500).send("Error updating game_cards " + error);
+      }
+      break;
+    case "skip":
+      try {
+        const getCurrentPlayerQuery = `SELECT current_player_id FROM games WHERE id = $1`;
+        const nextPlayerId = (await db.one(getCurrentPlayerQuery, [gameId]))
+          .current_player_id;
+        await updateActiveSeat(nextPlayerId, gameId);
+      } catch (error) {
+        console.log(
+          "Could not get total seats or current seat and direction",
+          error,
+        );
+        return res
+          .status(500)
+          .send(
+            "Could not get total seats or current seat and direction " + error,
+          );
+      }
+      break;
+    default:
+      break;
+  }
+  return res.status(200).send("Success!");
 };
 
 //returns the initial game state
@@ -255,6 +479,7 @@ module.exports = {
   playCard,
   getGame,
   joinGame,
+  drawCard,
   createGame,
   getMyGames,
   startGame,
