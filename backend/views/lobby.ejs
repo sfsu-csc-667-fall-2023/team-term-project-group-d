@@ -4,7 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Lobby</title>
-    <link rel="stylesheet" type="text/css" href="/styles/home.css" />
+    <link rel="stylesheet" type="text/css" href="/styles/lobby.css" />
+    <!-- <link rel="stylesheet" type="text/css" href="/styles/home.css" /> -->
     <script src="/scripts/chat.js" defer></script>
   </head>
   <body>
@@ -45,23 +46,34 @@
         <%} %>
       </div>
     </header>
+
+
+    <h1 id="game-name"><%- gameName %></h1>
+    <h2>Party Members:</h2>
     <div id = "player-container">
+     
         <% players.forEach(player => { %>
-            <p class="player-name">
-                <%= player.username %>
-            </p>
             <img
               class="player-card"
-              
               src= <%= player.image %>
               alt= <%= player.username %>
             />
+            <p class="player-name">
+              <%= player.username %>
+          </p>
+          </div>
             <% }); %>
+      
+    </div>
+    <div class="bottom-container">
+      <%- include('partials/chat', { chatMessages: messages, roomId: gameId } ) %>
+      <div id="lobby-button-container">
+        <button id="start-button">Start Game</button>
+        <button id="leave-button">Abandon Game</button>
+      </div>
     </div>
 
-   
-    <%- include('partials/chat', { chatMessages: messages, roomId: gameId } ) %>
-    <button id="start-button">Start Game</button>
-    <script src="/lobby.js"></script>
+    <input type="hidden" name="game-id" id="game-id" value="<%= gameId %>" />
+    <script type="module" src="/lobby.js"></script>
   </body>
 </html>

@@ -16,10 +16,20 @@
     autocomplete="false"
     required
   />
-  <button type="button" onclick="sendMessage()">Send</button>
+  <button id="send-message-button" type="button" onclick="sendMessage()">Send</button>
 </div>
 
 <script>
+  const chatInput = document.querySelector("#message");
+  chatInput.addEventListener("keyup", function (event) {
+    if (event.keyCode === 13) {
+      event.preventDefault();
+      document.querySelector("#send-message-button").click();
+    }
+  });
+
+
+
   //Step 1 Chat: POST message to chat route
   function sendMessage() {
     const roomId = document.querySelector("#room-id").value;
@@ -43,4 +53,6 @@
 
     document.querySelector("#message").value = "";
   }
+
+
 </script>
