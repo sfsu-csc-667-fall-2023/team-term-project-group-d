@@ -276,3 +276,12 @@ header nav span {
   width: fit-content;
   cursor: pointer;
 }
+
+#error-message-container {
+  margin: 10px;
+}
+
+#error-message-p {
+  font-size: 20px;
+  font-weight: bold;
+}
