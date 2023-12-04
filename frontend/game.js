@@ -3,6 +3,9 @@ const clientId = Number(document.getElementById("client-id").value);
 //setup socket to listen for game actions
 import { io } from "https://cdn.skypack.dev/socket.io-client"; //idk why this is necessary
 
+//sound effect that plays when anyone plays a card
+const playSound = new Audio("/music/play_card.m4a");
+
 const socket = io({ query: { id: gameId } });
 
 socket.on("card-played", (data) => {
@@ -36,7 +39,8 @@ socket.on("card-played", (data) => {
     //their turn ended, so remove the red border
     document.getElementById(`opponent-${data.clientId}`).style.border = "none";
   }
-
+  //play the play card sound effect
+  playSound.play();
   //update the display of the player whose turn it is
   if (clientId === Number(data.activePlayerId)) {
     client.style.border = "black solid 10px";
@@ -89,6 +93,8 @@ socket.on("card-drawn", (data) => {
     document.getElementById(`opponent-${data.activePlayerId}`).style.border =
       "yellow solid 3px";
   }
+  //play the draw card sound effect
+  playSound.play();
 });
 
 socket.on("is-win", (data) => {
@@ -195,3 +201,21 @@ drawButton.addEventListener("click", async (event) => {
     console.log(error);
   }
 });
+
+const soundTrack = new Audio("/music/uno_music.m4a");
+soundTrack.volume = 0.3;
+soundTrack.loop = true;
+
+const handleAudioClick = (e) => {
+  e.preventDefault();
+  if (e.target.innerText == "▶️") {
+    soundTrack.play();
+    e.target.innerText = "⏸️";
+  } else {
+    soundTrack.pause();
+    e.target.innerText = "▶️";
+  }
+};
+
+const audioButton = document.getElementById("music-button");
+audioButton.addEventListener("click", handleAudioClick);
