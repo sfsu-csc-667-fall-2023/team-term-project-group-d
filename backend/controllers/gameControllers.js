@@ -149,6 +149,13 @@ const drawCard = async (req, res) => {
   }
 };
 
+//check if a player has won
+const isWin = async (gameId, userId) => {
+  const getHandCount = `SELECT COUNT(*) FROM game_cards WHERE game_id = $1 AND user_id = $2`;
+  const handCount = await db.one(getHandCount, [gameId, userId]);
+  return handCount.count === 0;
+};
+
 const playCard = async (req, res) => {
   let { cardId, color, symbol } = req.body;
   console.log("symbol: ", symbol);
@@ -260,6 +267,7 @@ const playCard = async (req, res) => {
     default:
       break;
   }
+  //update everyone in game with the new card played
   req.app
     .get("io")
     .to(gameId + "")
@@ -271,7 +279,20 @@ const playCard = async (req, res) => {
       cardId: cardId,
       activePlayerId: activePlayerId,
     });
-  return res.status(200).send("Success!");
+
+  //check the win condition
+  try {
+    if (await isWin(gameId, userId)) {
+      req.app
+        .get("io")
+        .to(gameId + "")
+        .emit("is-win", { winnerName: req.session.user.username });
+      return res.status(200).send("Success!");
+    }
+  } catch (err) {
+    console.error("error checking win condition ", err);
+    return res.status(500).send(`Could not check win condition`);
+  }
 };
 
 //returns the initial game state

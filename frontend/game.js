@@ -91,6 +91,13 @@ socket.on("card-drawn", (data) => {
   }
 });
 
+socket.on("is-win", (data) => {
+  const winnerName = data.winnerName;
+  //unhide and fill the winner div with the winner info
+  document.getElementById("winner-header").innerText = `${winnerName} won!`;
+  document.getElementById("winner-div").classList.remove("hidden");
+});
+
 let selectedId;
 let selectedCardId;
 

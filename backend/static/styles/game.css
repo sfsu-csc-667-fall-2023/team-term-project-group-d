@@ -133,3 +133,24 @@ input#message {
   width: 24%;
   background-color: red;
 }
+
+.hidden {
+  display: none;
+}
+
+#winner-div {
+  height: 100vh;
+  width: 100vw;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  z-index: 100;
+  background-color: rgba(0, 0, 0, 0.4);
+}
+
+#winner-header {
+  font-size: 150px;
+  font-weight: bold;
+  color: white;
+  text-align: center;
+}
