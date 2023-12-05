@@ -37,6 +37,8 @@ const getLobby = async (req, res) => {
     LEFT JOIN game_users gu ON u.id = gu.users_id 
     WHERE (gu.game_id = $1)`;
 
+  const getMaxPlayersQuery = `SELECT max_players FROM games WHERE id = $1`;
+
   let lobby;
   try {
     lobby = await db.oneOrNone(getLobbyQuery, [gameId, userId]);
@@ -55,16 +57,22 @@ const getLobby = async (req, res) => {
   // try to render the lobby
   try {
     const players = await db.any(playerListQuery, [gameId]);
-
+    const maxPlayers = await db.one(getMaxPlayersQuery, [gameId]);
     res.render("lobby.ejs", {
+      maxPlayers: maxPlayers.max_players,
       gameName: lobby.name,
       gameId: gameId,
       players: players,
       chatMessages: ["hey what is up bro!?"],
     });
   } catch (err) {
-    console.error("error getting list of players in lobby ", err);
-    return res.status(500).send(`Could not get list of Players in Lobby`);
+    console.error(
+      "error getting list of players or max players in lobby ",
+      err,
+    );
+    return res
+      .status(500)
+      .send(`Could not get list of Players or the max players in Lobby`);
   }
 };
 

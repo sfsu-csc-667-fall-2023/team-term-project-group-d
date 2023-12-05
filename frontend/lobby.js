@@ -1,6 +1,6 @@
 const gameId = Number(document.getElementById("game-id").value);
+const startButton = document.getElementById("start-button");
 
-//setup socket to listen for game start
 import { io } from "https://cdn.skypack.dev/socket.io-client"; //idk why this is necessary
 
 const socket = io({ query: { id: gameId } });
@@ -14,6 +14,37 @@ socket.on("game-start", (data) => {
   setTimeout(() => {
     window.location.href = "/game/" + data.gameId;
   }, 1500);
+});
+
+socket.on("player-joined", (user) => {
+  //append the new user to the list of users
+  const userContainer = document.createElement("div");
+  userContainer.classList.add("player-card-container");
+  const userImg = document.createElement("img");
+  userImg.src = user.image;
+  userImg.alt = user.username;
+  userImg.classList.add("player-card");
+  const nameParagraph = document.createElement("p");
+  nameParagraph.innerText = user.username;
+  userContainer.appendChild(userImg);
+  userContainer.appendChild(nameParagraph);
+  const parent = document.getElementById("player-container");
+  parent.prepend(userContainer);
+  //update the player count
+  const oldPlayerCount = Number(
+    document.getElementById("player-count").innerText.charAt(0),
+  );
+  const maxPlayers = Number(
+    document.getElementById("player-count").innerText.slice(-1),
+  );
+  document.getElementById("player-count").innerText =
+    oldPlayerCount + 1 + " / " + maxPlayers;
+
+  if (oldPlayerCount + 1 == maxPlayers) {
+    startButton.style.backgroundColor = "green";
+    startButton.style.color = "yellow";
+  }
+  startButton.disabled = false;
 });
 
 const startGame = async () => {
@@ -37,5 +68,4 @@ const startGame = async () => {
   }
 };
 
-const startButton = document.getElementById("start-button");
 startButton.addEventListener("click", startGame);
