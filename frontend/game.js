@@ -243,7 +243,7 @@ soundTrack.loop = true;
 
 const handleAudioClick = (e) => {
   e.preventDefault();
-  if (e.target.innerText == "▶️") {
+  if (e.target.innerText === "▶️") {
     soundTrack.play();
     e.target.innerText = "⏸️";
   } else {
@@ -254,3 +254,11 @@ const handleAudioClick = (e) => {
 
 const audioButton = document.getElementById("music-button");
 audioButton.addEventListener("click", handleAudioClick);
+
+const handleExitGame = (gameId, userId) => {
+  alert("TODO : delete game");
+  window.location.href = "/";
+};
+
+const returnHomeButton = document.getElementById("return-home-button");
+returnHomeButton.addEventListener("click", handleExitGame);

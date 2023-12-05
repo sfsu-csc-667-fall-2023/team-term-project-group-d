@@ -167,7 +167,7 @@ input#message {
   text-align: center;
 }
 
-#play-again-button {
+#return-home-button {
   margin: auto;
   height: fit-content;
   width: fit-content;
@@ -181,21 +181,5 @@ input#message {
   top: 50%;
   right: 40%;
 
-  z-index: 101;
-}
-
-#close-button {
-  margin: auto;
-  height: fit-content;
-  width: fit-content;
-  font-size: 50px;
-  font-weight: bold;
-  background-color: red;
-  color: white;
-  border: 3px solid black;
-  cursor: pointer;
-  position: absolute;
-  top: 20px;
-  right: 20px;
   z-index: 101;
 }

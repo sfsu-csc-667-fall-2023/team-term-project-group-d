@@ -9,8 +9,6 @@
     <script src="/scripts/games.js" defer></script>
   </head>
 
-
-
   <body>
     <h1><%= gameName %></h1>
     <div class="players-container">
@@ -34,8 +32,7 @@
         <h1 id = "winner-header">
         <!-- this h1 will be filled in with the winner's username -->
         </h1>
-        <button id = "play-again-button"  name="play-again" value="play-again">Play Again</button>
-        <button id="close-button">X</button>
+        <button id = "return-home-button">Return to Lobby</button>
       </div>
       <div id="main-left">
         <div class="deck-and-discard">
@@ -73,9 +70,6 @@
         card-symbol="<%= card.symbol %>"
       />
       <% }); %>
-      <p class="hand-size">
-        <%= clientHand.length %>
-      </p>
     </div>
     <input type="hidden" name="room-id" id="game-id" value="<%= gameId %>" />
     <input type="hidden" name="client-id" id="client-id" value="<%= clientId %>" />
