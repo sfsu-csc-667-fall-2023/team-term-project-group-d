@@ -5,9 +5,15 @@ import { io } from "https://cdn.skypack.dev/socket.io-client"; //idk why this is
 
 const socket = io({ query: { id: gameId } });
 
+const shuffleSound = new Audio("/music/shuffle_sound.m4a");
+
 socket.on("game-start", (data) => {
   //transport the user to the game page
-  window.location.href = "/game/" + data.gameId;
+  shuffleSound.volume = 0.5;
+  shuffleSound.play();
+  setTimeout(() => {
+    window.location.href = "/game/" + data.gameId;
+  }, 1500);
 });
 
 const startGame = async () => {

@@ -60,15 +60,17 @@ main {
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  height: 100%;
+  height: 70%;
   width: 100%;
 }
 
 .deck-and-discard {
   display: flex;
-  margin: auto;
+  margin-left: 20%;
   flex-direction: row;
   align-items: center;
+  height: 300px;
+  width: 300px;
 }
 
 .deck-container img {
@@ -90,6 +92,7 @@ main {
   bottom: 0px;
   width: 100%;
   background-color: yellow;
+  overflow-x: scroll;
 }
 
 #chat-messages {
@@ -104,7 +107,7 @@ main {
 }
 
 #chat-container {
-  height: 50vh;
+  height: 65%;
   width: 40%;
   background-color: orange;
   border: 3px solid black;
@@ -116,8 +119,14 @@ main {
 }
 
 input#message {
-  width: 80%;
+  width: 75%;
   height: 8%;
+}
+
+#send-message-button {
+  width: 15%;
+  height: 10%;
+  cursor: pointer;
 }
 
 .client-hand img.selected {
@@ -126,10 +135,51 @@ input#message {
 
 .game-buttons {
   display: flex;
+  flex-wrap: wrap;
   flex-direction: row;
   justify-content: space-evenly;
   align-items: center;
   height: 10%;
   width: 24%;
-  background-color: red;
+  background-color: beige;
+  border: solid 3px green;
+  margin-right: 10px;
+}
+
+.hidden {
+  display: none;
+}
+
+#winner-div {
+  height: 100vh;
+  width: 100vw;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  z-index: 100;
+  background-color: rgba(0, 0, 0, 0.4);
+}
+
+#winner-header {
+  font-size: 150px;
+  font-weight: bold;
+  color: white;
+  text-align: center;
+}
+
+#return-home-button {
+  margin: auto;
+  height: fit-content;
+  width: fit-content;
+  font-size: 50px;
+  font-weight: bold;
+  background-color: yellow;
+  color: red;
+  border: 3px solid black;
+  cursor: pointer;
+  position: absolute;
+  top: 50%;
+  right: 40%;
+
+  z-index: 101;
 }

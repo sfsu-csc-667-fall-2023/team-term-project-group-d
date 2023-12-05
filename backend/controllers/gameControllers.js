@@ -1,23 +1,27 @@
 const db = require("../db/connection");
 
 const updateActiveSeat = async (userId, gameId) => {
-  const getTotalSeats = `SELECT COUNT(*) FROM game_users WHERE game_id = $1`;
-  const getCurrentSeatandDirection = `SELECT game_users.seat, games.direction
+  const getTotalSeatsQuery = `SELECT COUNT(*) FROM game_users WHERE game_id = $1`;
+  const getCurrentSeatAndDirectionQuery = `SELECT game_users.seat, games.direction
    FROM game_users
    JOIN games ON game_users.game_id = games.id
    WHERE game_users.game_id = $1 AND game_users.users_id = $2`;
 
-  const updateCurrentPlayer = `UPDATE games SET current_player_id = (SELECT users_id FROM game_users WHERE seat = $1 AND game_id = $2) WHERE id = $2`;
+  const updateCurrentPlayerQuery = `UPDATE games
+   SET current_player_id =
+  (SELECT users_id FROM game_users WHERE seat = $1 AND game_id = $2)
+  WHERE id = $2
+  RETURNING current_player_id`;
 
-  const totalSeats = Number((await db.one(getTotalSeats, [gameId])).count);
+  const totalSeats = Number((await db.one(getTotalSeatsQuery, [gameId])).count);
 
-  const currentSeatandDirection = await db.one(getCurrentSeatandDirection, [
-    gameId,
-    userId,
-  ]);
+  const currentSeatAndDirection = await db.one(
+    getCurrentSeatAndDirectionQuery,
+    [gameId, userId],
+  );
 
-  const addend = currentSeatandDirection.direction === "clockwise" ? 1 : -1;
-  let newSeat = currentSeatandDirection.seat + addend;
+  const addend = currentSeatAndDirection.direction === "clockwise" ? 1 : -1;
+  let newSeat = currentSeatAndDirection.seat + addend;
 
   if (newSeat < 1) {
     newSeat += totalSeats;
@@ -25,7 +29,8 @@ const updateActiveSeat = async (userId, gameId) => {
     newSeat = newSeat > totalSeats ? newSeat - totalSeats : newSeat;
   }
 
-  await db.none(updateCurrentPlayer, [newSeat, gameId]);
+  return (await db.one(updateCurrentPlayerQuery, [newSeat, gameId]))
+    .current_player_id;
 };
 
 const drawCards = async (currentPlayerId, gameId, drawNumber) => {
@@ -41,7 +46,7 @@ const drawCards = async (currentPlayerId, gameId, drawNumber) => {
     ]);
     console.log(deckCount);
     if (!discardCount || discardCount.count < drawNumber) {
-      console.log("No more cards in discard pile or deck, ending game"); //TODO send message with socket io
+      console.error("No more cards in discard pile or deck, ending game"); //TODO send message with socket io
       return;
     } else {
       const restoreDeckQuery = `UPDATE game_cards SET user_id = NULL, discarded = false WHERE ( discarded = true AND game_id = $1 )`;
@@ -49,17 +54,24 @@ const drawCards = async (currentPlayerId, gameId, drawNumber) => {
     }
   }
 
+  const selectIdsQuery = `SELECT card_id FROM game_cards WHERE user_id IS NULL AND game_id = $1 ORDER BY RANDOM() LIMIT $2 `;
+  const ids = await db.any(selectIdsQuery, [gameId, drawNumber]);
+  const cardIds = ids.map((id) => id.card_id);
+
   const drawCardsQuery = `UPDATE game_cards SET user_id = $1 
     WHERE game_id = $2 
-    AND card_id IN (SELECT card_id FROM game_cards WHERE user_id IS NULL ORDER BY RANDOM() LIMIT $3)`;
+    AND card_id IN ($3:csv)`;
 
-  await db.none(drawCardsQuery, [currentPlayerId, gameId, drawNumber]);
+  await db.any(drawCardsQuery, [currentPlayerId, gameId, cardIds]);
+
+  const getDrawnCardsQuery = `SELECT * FROM cards WHERE id IN ($1:csv)`;
+  const drawnCardsData = await db.any(getDrawnCardsQuery, [cardIds]);
+  console.log("drawing cards: ", JSON.stringify(drawnCardsData));
+
+  return drawnCardsData;
 };
 
 const reverseDirection = async (gameId) => {
-  //SELECT current_direction of the game
-  //Then reverse the direction then update the game's direction to the reverse direction
-
   const gameDirectionQuery = `UPDATE games
    SET direction = (
       CASE
@@ -89,34 +101,53 @@ const isValidMove = async (color, symbol, gameId) => {
 };
 
 const isOutOfTurn = async (gameId, userId) => {
-  const getActivePlayer = `SELECT current_player_id FROM games WHERE id = $1`;
-  const activeId = await db.one(getActivePlayer, [gameId]);
+  const getActivePlayerQuery = `SELECT current_player_id FROM games WHERE id = $1`;
+  const activeId = await db.one(getActivePlayerQuery, [gameId]);
   return activeId.current_player_id !== userId;
 };
 
 const drawCard = async (req, res) => {
   const userId = req.session.user.id;
   const gameId = req.params.id;
+  let activePlayerId, drawnCard;
 
   if (await isOutOfTurn(gameId, userId)) {
-    console.log("Player is trying to move out of turn");
-    return res.status(400).send("It's not your turn bucko");
+    console.error("Player is trying to move out of turn");
+    return res.status(400).send("It's not your turn, bucko");
   }
 
   try {
-    await drawCards(userId, gameId, 1);
+    drawnCard = await drawCards(userId, gameId, 1);
   } catch (error) {
-    console.log("Error in drawing card " + error);
+    console.error("Error in drawing card " + error);
     return res.status(500).send("Error in drawing card " + error);
   }
 
   try {
-    await updateActiveSeat(userId, gameId);
+    activePlayerId = await updateActiveSeat(userId, gameId);
+
+    req.app
+      .get("io")
+      .to(gameId + "")
+      .emit("card-drawn", {
+        gameId: gameId,
+        clientId: userId,
+        activePlayerId: activePlayerId,
+        drawnSymbol: drawnCard[0].symbol,
+        drawnColor: drawnCard[0].color,
+        drawnId: drawnCard[0].id,
+      });
     return res.status(200).send();
   } catch (error) {
     console.log("Error in updating active seat " + error);
     return res.status(500).send("Error in updating active seat " + error);
   }
+};
+
+const isWin = async (gameId, userId) => {
+  const getHandCount = `SELECT COUNT(card_id) FROM game_cards WHERE game_id = $1 AND user_id = $2 AND discarded = false`;
+  const handCount = await db.one(getHandCount, [gameId, userId]);
+  return handCount.count === "0";
 };
 
 const playCard = async (req, res) => {
@@ -125,17 +156,17 @@ const playCard = async (req, res) => {
   const gameId = req.params.id;
 
   if (await isOutOfTurn(gameId, userId)) {
-    console.log("Player is trying to move out of turn");
-    return res.status(400).send("It's not your turn bucko");
+    console.error("Player is trying to move out of turn");
+    return res.status(400).send("It's not your turn, bucko");
   }
 
   try {
-    const isVaild = await isValidMove(color, symbol, gameId);
-    if (!isVaild) {
+    const isValid = await isValidMove(color, symbol, gameId);
+    if (!isValid) {
       return res.status(400).send("Player move not valid \n");
     }
   } catch (error) {
-    console.log("Could not determine if valid move \n" + error);
+    console.error("Could not determine if valid move \n" + error);
     return res.status(500).send("Could not determine if valid move \n" + error);
   }
 
@@ -150,6 +181,7 @@ const playCard = async (req, res) => {
       cardId,
       userId,
     ]);
+
     //check if card played is in players hand
     if (!card) {
       return res.status(400).send("Don't cheat :/");
@@ -179,21 +211,28 @@ const playCard = async (req, res) => {
     }
   }
 
+  let activePlayerId;
   try {
-    await updateActiveSeat(userId, gameId);
+    activePlayerId = await updateActiveSeat(userId, gameId);
   } catch (error) {
-    console.log("Error in updating active seat " + error);
+    console.error("Error in updating active seat " + error);
     return res.status(500).send("Error in updating active seat " + error);
   }
 
+  let cards;
   switch (symbol) {
     case "draw_two":
       try {
         const getCurrentPlayerQuery = `SELECT current_player_id FROM games WHERE id = $1`;
         const currentPlayerId = await db.one(getCurrentPlayerQuery, [gameId]);
-        await drawCards(currentPlayerId.current_player_id, gameId, 2);
+        cards = await drawCards(currentPlayerId.current_player_id, gameId, 2);
+        req.app.get("io").to(gameId.toString()).emit("cards-drawn", {
+          gameId: gameId,
+          cards,
+          currentPlayerId: currentPlayerId.current_player_id,
+        });
       } catch (error) {
-        console.log("Error updating game_cards", error);
+        console.error("Error updating game_cards", error);
         return res.status(500).send("Error updating game_cards " + error);
       }
       break;
@@ -201,9 +240,16 @@ const playCard = async (req, res) => {
       try {
         const getCurrentPlayerQuery = `SELECT current_player_id FROM games WHERE id = $1`;
         const currentPlayerId = await db.one(getCurrentPlayerQuery, [gameId]);
-        await drawCards(currentPlayerId.current_player_id, gameId, 4);
+        console.log("current player id", currentPlayerId);
+        cards = await drawCards(currentPlayerId.current_player_id, gameId, 4);
+
+        req.app.get("io").to(gameId.toString()).emit("cards-drawn", {
+          gameId: gameId,
+          cards,
+          currentPlayerId: currentPlayerId.current_player_id,
+        });
       } catch (error) {
-        console.log("Error updating game_cards", error);
+        console.error("Error updating game_cards", error);
         return res.status(500).send("Error updating game_cards " + error);
       }
       break;
@@ -212,9 +258,9 @@ const playCard = async (req, res) => {
         const getCurrentPlayerQuery = `SELECT current_player_id FROM games WHERE id = $1`;
         const nextPlayerId = (await db.one(getCurrentPlayerQuery, [gameId]))
           .current_player_id;
-        await updateActiveSeat(nextPlayerId, gameId);
+        activePlayerId = await updateActiveSeat(nextPlayerId, gameId);
       } catch (error) {
-        console.log(
+        console.error(
           "Could not get total seats or current seat and direction",
           error,
         );
@@ -228,33 +274,57 @@ const playCard = async (req, res) => {
     default:
       break;
   }
-  return res.status(200).send("Success!");
+  //update everyone in game with the new card played
+  req.app.get("io").to(gameId.toString()).emit("card-played", {
+    gameId: gameId,
+    color: color,
+    symbol: symbol,
+    clientId: userId,
+    cardId: cardId,
+    activePlayerId: activePlayerId,
+  });
+
+  //check the win condition
+  try {
+    if (await isWin(gameId, userId)) {
+      req.app
+        .get("io")
+        .to(gameId.toString())
+        .emit("is-win", { winnerName: req.session.user.username });
+      return res.status(200).send("Success!");
+    }
+  } catch (err) {
+    console.error("error checking win condition ", err);
+    return res.status(500).send(`Could not check win condition`);
+  }
 };
 
-//returns the initial game state
+/**
+ *  returns the initial game state
+ */
 const getGame = async (req, res) => {
   const gameId = req.params.id;
   const userId = req.session.user.id;
   let game, clientHand, playerData, currentCard;
 
-  //get game data
   const getGameQuery = `SELECT * FROM games WHERE id = $1`;
   try {
     game = await db.oneOrNone(getGameQuery, [gameId]);
     if (!game) {
       return res.status(404).send(`Game does not exist`);
     }
-    console.log(JSON.stringify(game)); //debug
+    console.log(JSON.stringify(game));
   } catch (err) {
     console.error("error getting game ", err);
     return res.status(500).send(`Could not get game`);
   }
 
   //get the player's cards in hand (the colors and symbols and ids of the cards)
-  const getPlayerHandQuery = `SELECT * FROM cards WHERE id IN (SELECT card_id FROM game_cards WHERE game_id = $1 AND user_id = $2)`;
+  const getPlayerHandQuery = `SELECT * FROM cards WHERE id IN 
+                                    (SELECT card_id FROM game_cards WHERE game_id = $1 AND user_id = $2 AND discarded = false)`;
   try {
     clientHand = await db.any(getPlayerHandQuery, [gameId, userId]);
-    console.log("player hand is: " + JSON.stringify(clientHand)); //debug
+    console.log("player hand is: ", JSON.stringify(clientHand));
   } catch (err) {
     console.error("error getting player hand ", err);
     return res.status(500).send(`Could not get player hand`);
@@ -279,28 +349,31 @@ const getGame = async (req, res) => {
 
   try {
     playerData = await db.any(getPlayerData, [gameId, userId]);
-    console.log("player data is: " + JSON.stringify(playerData)); //debug
+    console.log("player data is: ", JSON.stringify(playerData));
   } catch (err) {
-    console.log("error getting player hand size ", err);
+    console.error("error getting player hand size ", err);
     return res.status(500).send(`Could not get player hand size`);
   }
-  //get the discard card's color and symbol
-  const getDiscardCard = `SELECT * FROM cards WHERE id = $1`;
+
+  const getDiscardCardQuery = `SELECT * FROM cards WHERE id = $1`;
   try {
-    currentCard = await db.one(getDiscardCard, [game.current_card_id]);
+    currentCard = await db.one(getDiscardCardQuery, [game.current_card_id]);
   } catch (err) {
     console.log("error getting discard card ", err);
     return res.status(500).send(`Could not get discard card`);
   }
 
+  currentCard.color = game.active_color;
+
   res.render("game.ejs", {
     gameId: gameId,
     gameName: game.name,
+    clientId: userId,
     activePlayerId: game.current_player_id,
     clientHand: clientHand,
     playerList: playerData,
     discardCard: currentCard,
-    chatMessages: ["hey what is up bro!?"], //this message should display all player names in the game.
+    chatMessages: ["Welcome to the Game!"],
   });
 };
 
@@ -308,27 +381,6 @@ const joinGame = async (req, res) => {
   const { id: gameId } = req.params;
   const { password } = req.body;
   const { id: userId } = req.session.user;
-
-  /**
-   * Process to actually join the lobby:
-   *
-   * 1) Check lobby exists (as a row in games)
-   *    - Respond: lobby does not exist
-   *    - If active, is a game: redirect to /games/id
-   *
-   * 2) Check password matches (games.password == password)
-   *    - Respond: incorrect password
-   *
-   * 3) Check game not full (player_count < games.max_players)
-   *    - Respond: lobby is full
-   *
-   * 4) Check user not already in lobby (game_users has a row for game id and user id)
-   *    - Redirect to /lobby/id if already in lobby
-   *
-   * 5) Add user to lobby (add to game_users)
-   *
-   * 6) Redirect user to /lobby/id
-   */
 
   // Get the lobby if it exists { id, password, max players, player count }
   const getLobbyQuery = `SELECT
@@ -351,22 +403,25 @@ const joinGame = async (req, res) => {
   try {
     lobby = await db.oneOrNone(getLobbyQuery, [gameId]);
 
-    if (!lobby) return res.status(404).send(`Lobby does not exist`);
+    if (!lobby) {
+      return res.status(404).send(`Lobby does not exist`);
+    }
 
-    if (lobby.active) return res.redirect(`/game/${gameId}`);
+    if (lobby.active) {
+      return res.redirect(`/game/${gameId}`);
+    }
   } catch (err) {
     console.error("error occurred getting lobby info ", err);
     return res.status(404).send(`Server error while getting Lobby`);
   }
 
-  // Check password matches
   if (lobby.password !== password && lobby.password !== null) {
     return res.status(403).send(`Incorrect password for Lobby`);
   }
 
-  // Check lobby not full
-  if (lobby.player_count >= lobby.max_players)
+  if (lobby.player_count >= lobby.max_players) {
     return res.status(403).send(`Lobby is full`);
+  }
 
   // Check user not already connected to lobby
   try {
@@ -415,7 +470,7 @@ const createGame = async (req, res) => {
     lobby = await db.one(createLobbyQuery, [name, password, max_players]);
   } catch (err) {
     // If error was due to unique column value constraint for games.name
-    if (err.code == "23505") {
+    if (err.code === "23505") {
       return res.status(400).send(`Lobby name taken`);
     } else {
       console.error("error creating lobby ", err);
@@ -439,7 +494,8 @@ const startGame = async (req, res) => {
   const gameId = req.body.gameId;
   const userId = req.session.user.id;
   //TODO: check that the user is allowed to start this game
-  //user must be in the game_users that correspond to the game.
+  //  1. Anyone within the lobby can start the game
+  //  2. You should not be able to start the game if only person is in the lobby
 
   const startGameQuery = `CALL start_game($1)`;
 
@@ -448,7 +504,7 @@ const startGame = async (req, res) => {
     req.app
       .get("io")
       .to(gameId + "")
-      .emit("game-start", { gameId: gameId });
+      .emit("game-start", { gameId: gameId, userId: userId });
   } catch (err) {
     console.error("error starting game ", err);
     return res.status(500).send(`Could not start game`);
@@ -457,7 +513,6 @@ const startGame = async (req, res) => {
 
 const getMyGames = async (req, res) => {
   const { id: userId } = req.session.user;
-
   // Get list of games (active) user is in
   const getMyGamesQuery = `SELECT g.id, g.name
     FROM games g

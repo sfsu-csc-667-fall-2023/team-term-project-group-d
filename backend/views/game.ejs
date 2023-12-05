@@ -9,19 +9,17 @@
     <script src="/scripts/games.js" defer></script>
   </head>
 
-
-
   <body>
     <h1><%= gameName %></h1>
     <div class="players-container">
       <% playerList.forEach(player => { %>
-      <div class="opponent-container">
+      <div class="opponent-container" id="opponent-<%= player.id %>">
         <p class="opponent-name">
           <%= player.name %>
         </p>
         <div class="opponent-container-bottom">
           <img src="/images/cards/uno_back.png" alt="back of uno card" />
-          <p class="opponent-hand-size">
+          <p class="opponent-hand-size" id="hand-<%= player.id %>">
             <%= player.handcount + "X" %>
           </p>
         </div>
@@ -30,6 +28,12 @@
       <% }); %>
     </div>
     <main>
+      <div id="winner-div" class="hidden">
+        <h1 id = "winner-header">
+        <!-- this h1 will be filled in with the winner's username -->
+        </h1>
+        <button id = "return-home-button">Return to Lobby</button>
+      </div>
       <div id="main-left">
         <div class="deck-and-discard">
           <div class="deck-container">
@@ -49,6 +53,7 @@
           <button id = "draw-button" type="submit" name="draw" value="draw">Draw</button>
           <button id = "uno-button" type="submit" name="uno" value="uno">Uno</button>
           <button id = "play-button" name="play-button">Play</button>
+          <button id = "music-button" name="music-button">▶️</button>
         </div>
       </div>
       <%- include('partials/chat', { chatMessages: messages, roomId: gameId } ) %>
@@ -65,11 +70,10 @@
         card-symbol="<%= card.symbol %>"
       />
       <% }); %>
-      <p class="hand-size">
-        <%= clientHand.length %>
-      </p>
     </div>
     <input type="hidden" name="room-id" id="game-id" value="<%= gameId %>" />
-    <script src="/game.js"></script>
+    <input type="hidden" name="client-id" id="client-id" value="<%= clientId %>" />
+    <input type="hidden" name="active-player-id" id="active-player-id" value="<%= activePlayerId %>" />
+    <script type="module" src="/game.js"></script>
   </body>
 </html>

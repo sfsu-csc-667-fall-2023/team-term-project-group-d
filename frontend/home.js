@@ -1,7 +1,7 @@
 /// Get List of Lobbies
 // Game List container
 const gameList = document.getElementById("game-list");
-
+const activeGameList = document.getElementById("active-game-list");
 const getLobbies = async () => {
   try {
     const res = await fetch(`/lobby/list`);
@@ -12,6 +12,16 @@ const getLobbies = async () => {
   } catch (error) {
     console.log(error);
     return [];
+  }
+};
+
+const getActiveGames = async () => {
+  try {
+    const result = await fetch(`/game/getMyGames`);
+    const json = await result.json();
+    return json; // game { id, name, player_count, max_players, has_password }
+  } catch (err) {
+    console.log("could not fetch active games " + err);
   }
 };
 
@@ -51,12 +61,54 @@ const displayGameInList = (game) => {
   gameList.appendChild(outerDiv);
 };
 
+const displayActiveGameInList = (game) => {
+  const outerDiv = document.createElement("div");
+  outerDiv.classList.add("available-game");
+  outerDiv.id = `game-${game.id}`;
+
+  const idParagraph = document.createElement("p");
+  idParagraph.innerText = game.id;
+
+  const nameParagraph = document.createElement("p");
+  nameParagraph.innerText = game.name + (game.has_password ? "🔒" : "");
+
+  const abandonButton = document.createElement("button");
+  abandonButton.addEventListener("click", async () => {
+    //await abandonGame(game.id);
+    alert("not implemented yet");
+  });
+  const joinButton = document.createElement("button");
+  joinButton.addEventListener("click", async () => {
+    if (game.has_password) {
+      generateProtectedGameForm(game.id, game.name);
+    } else {
+      // redirect to game page
+      window.location.href = `/game/${game.id}`;
+    }
+  });
+  joinButton.innerText = "Rejoin";
+  abandonButton.innerText = "X";
+  const innerDiv = document.createElement("div");
+  innerDiv.classList.add("game-info");
+
+  outerDiv.appendChild(idParagraph);
+  innerDiv.appendChild(nameParagraph);
+  outerDiv.appendChild(innerDiv);
+  outerDiv.appendChild(joinButton);
+  // outerDiv.appendChild(abandonButton); third priority feature
+
+  activeGameList.appendChild(outerDiv);
+};
+
 // Get All Lobbies on page load
 var games = [];
+var activeGames = [];
 (async () => {
   games = await getLobbies();
-
+  activeGames = await getActiveGames();
+  console.log(JSON.stringify(activeGames));
   games.forEach((game) => displayGameInList(game));
+  activeGames.forEach((game) => displayActiveGameInList(game));
 })();
 
 const buttonListRefresh = document.getElementById("list-refresh-button");
