@@ -1,6 +1,5 @@
 const gameId = Number(document.getElementById("game-id").value);
 
-//setup socket to listen for game start
 import { io } from "https://cdn.skypack.dev/socket.io-client"; //idk why this is necessary
 
 const socket = io({ query: { id: gameId } });
@@ -14,6 +13,10 @@ socket.on("game-start", (data) => {
   setTimeout(() => {
     window.location.href = "/game/" + data.gameId;
   }, 1500);
+});
+
+socket.on("player-joined", () => {
+  window.location.reload();
 });
 
 const startGame = async () => {
