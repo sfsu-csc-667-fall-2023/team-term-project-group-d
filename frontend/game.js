@@ -1,27 +1,44 @@
 const gameId = Number(document.getElementById("game-id").value);
 const clientId = Number(document.getElementById("client-id").value);
-//setup socket to listen for game actions
+const client = document.getElementsByClassName("client-hand")[0];
+
 import { io } from "https://cdn.skypack.dev/socket.io-client"; //idk why this is necessary
 
 //sound effect that plays when anyone plays a card
 const playSound = new Audio("/music/play_card.m4a");
 
+const hideButtons = () => {
+  document.getElementById("play-button").classList.add("hidden");
+  document.getElementById("draw-button").classList.add("hidden");
+};
+const showButtons = () => {
+  document.getElementById("play-button").classList.remove("hidden");
+  document.getElementById("draw-button").classList.remove("hidden");
+};
+
+const updateTurnDisplay = (clientId, activePlayerId) => {
+  //play the play card sound effect
+  playSound.play();
+  //update the display of the player whose turn it is
+  if (clientId === activePlayerId) {
+    showButtons();
+    client.style.border = "black solid 10px";
+  } else {
+    hideButtons();
+    document.getElementById(`opponent-${activePlayerId}`).style.border =
+      "yellow solid 3px";
+  }
+};
+
 const socket = io({ query: { id: gameId } });
 
 socket.on("card-played", (data) => {
-  /**
-   * if the card played was a wild card, then somehow display the color chosen
-   * TODO: add 8 cards: red_wild, blue_wild, green_wild, yellow_wild_draw_four, etc.
-   * display who's turn it is
-   */
-  const client = document.getElementsByClassName("client-hand")[0];
   const newSrc = `/images/cards/${data.color}_${data.symbol}.png`;
   const activeCard = document.getElementById("discard-card");
   activeCard.setAttribute("src", newSrc);
   activeCard.setAttribute("card-color", data.color);
   activeCard.setAttribute("card-symbol", data.symbol);
-  //determine if the card was played by this client
-  console.log(JSON.stringify(data));
+
   if (clientId === Number(data.clientId)) {
     //remove the card from the hand
     const cardToRemove = document.getElementById(
@@ -32,27 +49,17 @@ socket.on("card-played", (data) => {
   } else {
     //update the hand count of the player who played the card
     const playerHandCount = document.getElementById(`hand-${data.clientId}`);
-    console.log("the player has this in hand: " + playerHandCount.innerText);
     playerHandCount.innerText =
       Number(playerHandCount.innerText.slice(0, -1)) - 1 + "X";
-    //their turn ended, so remove the red border
+    //their turn ended, so remove the border
     document.getElementById(`opponent-${data.clientId}`).style.border = "none";
   }
-  //play the play card sound effect
-  playSound.play();
-  //update the display of the player whose turn it is
-  if (clientId === Number(data.activePlayerId)) {
-    client.style.border = "black solid 10px";
-  } else {
-    document.getElementById(`opponent-${data.activePlayerId}`).style.border =
-      "yellow solid 3px";
-  }
+
+  updateTurnDisplay(clientId, data.activePlayerId);
 });
 
 socket.on("cards-drawn", (data) => {
-  console.log("in cards-drawn ", data.cards);
   if (clientId === Number(data.currentPlayerId)) {
-    const client = document.getElementsByClassName("client-hand")[0];
     data.cards.forEach((card) => {
       const newCard = document.createElement("img");
       newCard.setAttribute(
@@ -86,13 +93,6 @@ socket.on("cards-drawn", (data) => {
 });
 
 socket.on("card-drawn", (data) => {
-  /**
-   * display who's turn it is
-   * if it is the client that just moved, update their hand with the new card
-   * else, update the hand count of the player who drew the card
-   *
-   */
-  const client = document.getElementsByClassName("client-hand")[0];
   if (clientId === Number(data.clientId)) {
     const newCard = document.createElement("img");
     newCard.setAttribute(
@@ -122,14 +122,7 @@ socket.on("card-drawn", (data) => {
     document.getElementById(`opponent-${data.clientId}`).style.border = "none";
   }
   //update the display of the player whose turn it is
-  if (clientId === Number(data.activePlayerId)) {
-    client.style.border = "black solid 10px";
-  } else {
-    document.getElementById(`opponent-${data.activePlayerId}`).style.border =
-      "yellow solid 3px";
-  }
-  //play the draw card sound effect
-  playSound.play();
+  updateTurnDisplay(clientId, data.activePlayerId);
 });
 
 socket.on("is-win", (data) => {
@@ -150,6 +143,7 @@ if (clientId === Number(activePlayerId)) {
 } else {
   document.getElementById(`opponent-${activePlayerId}`).style.border =
     "yellow solid 3px";
+  hideButtons();
 }
 
 //check if the card arg is allowed to be played
