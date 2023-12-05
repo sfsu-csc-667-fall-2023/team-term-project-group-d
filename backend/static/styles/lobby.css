@@ -15,6 +15,7 @@ a:hover {
 body {
   height: 100vh;
   width: 100vw;
+  box-sizing: border-box;
   background-image: url("../images/uno.JPG");
   background-size: cover;
   background-repeat: no-repeat;
@@ -79,9 +80,9 @@ header nav span {
   flex-direction: row;
   align-items: center;
   justify-content: space-evenly;
-  height: 80px;
+  height: 150px;
   width: 100%;
-  background-color: yellow;
+  background-color: black;
 }
 
 #player-container > div {
@@ -95,13 +96,13 @@ header nav span {
 
 #chat-container {
   background-color: yellow;
-  height: 100% !important;
+  height: 80% !important;
   width: 70%;
 }
 
 #chat-messages {
   background-color: white;
-  height: 90%;
+  height: 80%;
   width: 100%;
 }
 
@@ -138,4 +139,25 @@ button#start-button:active,
 #leave-button:active {
   background-color: rgb(18, 18, 48);
   color: yellow;
+}
+
+.player-card-container {
+  height: 200px;
+  width: 200px;
+  display: flex;
+}
+
+.player-card-container > img {
+  height: 100px;
+  width: 100px;
+}
+
+.player-card-container > p {
+  color: white;
+  font-size: 30px;
+  font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS", sans-serif;
+}
+
+#player-count {
+  color: white;
 }
