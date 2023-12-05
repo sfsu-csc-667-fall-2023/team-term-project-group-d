@@ -53,6 +53,7 @@
     <div id = "player-container">
      
         <% players.forEach(player => { %>
+          <div class="player-card-container">
             <img
               class="player-card"
               src= <%= player.image %>
@@ -63,7 +64,9 @@
           </p>
           </div>
             <% }); %>
-      
+            <p id="player-count">
+             Occupancy: <%= players.length %> / <%= maxPlayers %>
+            </p>
     </div>
     <div class="bottom-container">
       <%- include('partials/chat', { chatMessages: messages, roomId: gameId } ) %>
