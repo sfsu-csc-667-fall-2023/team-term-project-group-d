@@ -10,7 +10,6 @@ const socket = io({ query: { id: gameId } });
 
 socket.on("card-played", (data) => {
   /**
- 
    * if the card played was a wild card, then somehow display the color chosen
    * TODO: add 8 cards: red_wild, blue_wild, green_wild, yellow_wild_draw_four, etc.
    * display who's turn it is
@@ -50,6 +49,42 @@ socket.on("card-played", (data) => {
   }
 });
 
+socket.on("cards-drawn", (data) => {
+  console.log("in cards-drawn ", data.cards);
+  if (clientId === Number(data.currentPlayerId)) {
+    const client = document.getElementsByClassName("client-hand")[0];
+    data.cards.forEach((card) => {
+      const newCard = document.createElement("img");
+      newCard.setAttribute(
+        "src",
+        `/images/cards/${card.color}_${card.symbol}.png`,
+      );
+      newCard.setAttribute("class", "hand-card");
+      newCard.setAttribute("id", `game#${gameId}-card#${card.id}`);
+      newCard.setAttribute("card-color", card.color);
+      newCard.setAttribute("card-symbol", card.symbol);
+      newCard.addEventListener("click", (event) => {
+        selectedId = event.target.getAttribute("id");
+        let secondHalfOfId = selectedId.split("-")[1]; //selectedId looks like game#15-card#11 for example
+        selectedCardId = secondHalfOfId.substring(5, secondHalfOfId.length); //this gets the actual card id
+        for (let j = 0; j < hand.length; j++) {
+          if (hand.item(j) !== event.target)
+            hand.item(j).classList.remove("selected");
+        }
+        event.target.classList.toggle("selected");
+      });
+      client.appendChild(newCard);
+    });
+  } else {
+    const playerHandCount = document.getElementById(
+      `hand-${data.currentPlayerId}`,
+    );
+    playerHandCount.innerText =
+      Number(playerHandCount.innerText.slice(0, -1)) + data.cards.length + "X";
+    document.getElementById(`opponent-${data.clientId}`).style.border = "none";
+  }
+});
+
 socket.on("card-drawn", (data) => {
   /**
    * display who's turn it is
@@ -73,7 +108,7 @@ socket.on("card-drawn", (data) => {
       let secondHalfOfId = selectedId.split("-")[1]; //selectedId looks like game#15-card#11 for example
       selectedCardId = secondHalfOfId.substring(5, secondHalfOfId.length); //this gets the actual card id
       for (let j = 0; j < hand.length; j++) {
-        if (hand.item(j) != event.target)
+        if (hand.item(j) !== event.target)
           hand.item(j).classList.remove("selected");
       }
       event.target.classList.toggle("selected");

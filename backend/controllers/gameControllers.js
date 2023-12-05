@@ -54,19 +54,20 @@ const drawCards = async (currentPlayerId, gameId, drawNumber) => {
     }
   }
 
+  const selectIdsQuery = `SELECT card_id FROM game_cards WHERE user_id IS NULL AND game_id = $1 ORDER BY RANDOM() LIMIT $2 `;
+  const ids = await db.any(selectIdsQuery, [gameId, drawNumber]);
+  const cardIds = ids.map((id) => id.card_id);
+  console.log("cardIds length ", cardIds.length);
+
   const drawCardsQuery = `UPDATE game_cards SET user_id = $1 
     WHERE game_id = $2 
-    AND card_id IN (SELECT card_id FROM game_cards WHERE user_id IS NULL ORDER BY RANDOM() LIMIT $3 ) RETURNING card_id`;
+    AND card_id IN ($3:csv)`;
 
-  const drawnCards = await db.any(drawCardsQuery, [
-    currentPlayerId,
-    gameId,
-    drawNumber,
-  ]);
-  const getDrawnCardsQuery = `SELECT * FROM cards WHERE id IN ($1)`;
-  const drawnCardsData = await db.any(getDrawnCardsQuery, [
-    ...drawnCards.map((card) => card.card_id).join(","),
-  ]);
+  await db.any(drawCardsQuery, [currentPlayerId, gameId, cardIds]);
+
+  console.log("current card ids ", cardIds);
+  const getDrawnCardsQuery = `SELECT * FROM cards WHERE id IN ($1:csv)`;
+  const drawnCardsData = await db.any(getDrawnCardsQuery, [cardIds]);
   console.log("drawing cards: " + JSON.stringify(drawnCardsData));
   return drawnCardsData;
 };
@@ -115,14 +116,14 @@ const drawCard = async (req, res) => {
   let activePlayerId, drawnCard;
 
   if (await isOutOfTurn(gameId, userId)) {
-    console.log("Player is trying to move out of turn");
-    return res.status(400).send("It's not your turn bucko");
+    console.error("Player is trying to move out of turn");
+    return res.status(400).send("It's not your turn, bucko");
   }
 
   try {
     drawnCard = await drawCards(userId, gameId, 1);
   } catch (error) {
-    console.log("Error in drawing card " + error);
+    console.error("Error in drawing card " + error);
     return res.status(500).send("Error in drawing card " + error);
   }
 
@@ -151,30 +152,29 @@ const drawCard = async (req, res) => {
 
 //check if a player has won
 const isWin = async (gameId, userId) => {
-  const getHandCount = `SELECT COUNT(*) FROM game_cards WHERE game_id = $1 AND user_id = $2`;
+  const getHandCount = `SELECT COUNT(card_id) FROM game_cards WHERE game_id = $1 AND user_id = $2`;
   const handCount = await db.one(getHandCount, [gameId, userId]);
-  return handCount.count === 0;
+  console.log("handcount ", handCount.count, " ");
+  return handCount.count === "0";
 };
 
 const playCard = async (req, res) => {
   let { cardId, color, symbol } = req.body;
-  console.log("symbol: ", symbol);
   const userId = req.session.user.id;
   const gameId = req.params.id;
-  let activePlayerId;
 
   if (await isOutOfTurn(gameId, userId)) {
-    console.log("Player is trying to move out of turn");
-    return res.status(400).send("It's not your turn bucko");
+    console.error("Player is trying to move out of turn");
+    return res.status(400).send("It's not your turn, bucko");
   }
 
   try {
-    const isVaild = await isValidMove(color, symbol, gameId);
-    if (!isVaild) {
+    const isValid = await isValidMove(color, symbol, gameId);
+    if (!isValid) {
       return res.status(400).send("Player move not valid \n");
     }
   } catch (error) {
-    console.log("Could not determine if valid move \n" + error);
+    console.error("Could not determine if valid move \n" + error);
     return res.status(500).send("Could not determine if valid move \n" + error);
   }
 
@@ -218,19 +218,33 @@ const playCard = async (req, res) => {
     }
   }
 
+  let activePlayerId;
   try {
     activePlayerId = await updateActiveSeat(userId, gameId);
   } catch (error) {
-    console.log("Error in updating active seat " + error);
+    console.error("Error in updating active seat " + error);
     return res.status(500).send("Error in updating active seat " + error);
   }
 
+  let cards;
   switch (symbol) {
     case "draw_two":
       try {
         const getCurrentPlayerQuery = `SELECT current_player_id FROM games WHERE id = $1`;
         const currentPlayerId = await db.one(getCurrentPlayerQuery, [gameId]);
-        await drawCards(currentPlayerId.current_player_id, gameId, 2);
+        console.log("current player id ", currentPlayerId);
+        cards = await drawCards(currentPlayerId.current_player_id, gameId, 2);
+        console.log("draw_two ", cards);
+        req.app
+          .get("io")
+          .to(gameId + "")
+          .emit("cards-drawn", {
+            gameId: gameId,
+            //TODO: must do two emits. One will send the card drawn to the player who drew it
+            //the other will send the updated hand count to all other players
+            cards,
+            currentPlayerId: currentPlayerId.current_player_id,
+          });
       } catch (error) {
         console.log("Error updating game_cards", error);
         return res.status(500).send("Error updating game_cards " + error);
@@ -240,9 +254,21 @@ const playCard = async (req, res) => {
       try {
         const getCurrentPlayerQuery = `SELECT current_player_id FROM games WHERE id = $1`;
         const currentPlayerId = await db.one(getCurrentPlayerQuery, [gameId]);
-        await drawCards(currentPlayerId.current_player_id, gameId, 4);
+        console.log("current player id", currentPlayerId);
+        cards = await drawCards(currentPlayerId.current_player_id, gameId, 4);
+
+        req.app
+          .get("io")
+          .to(gameId + "")
+          .emit("cards-drawn", {
+            gameId: gameId,
+            //TODO: must do two emits. One will send the card drawn to the player who drew it
+            //the other will send the updated hand count to all other players
+            cards,
+            currentPlayerId: currentPlayerId.current_player_id,
+          });
       } catch (error) {
-        console.log("Error updating game_cards", error);
+        console.error("Error updating game_cards", error);
         return res.status(500).send("Error updating game_cards " + error);
       }
       break;
@@ -251,6 +277,7 @@ const playCard = async (req, res) => {
         const getCurrentPlayerQuery = `SELECT current_player_id FROM games WHERE id = $1`;
         const nextPlayerId = (await db.one(getCurrentPlayerQuery, [gameId]))
           .current_player_id;
+        console.log("current player id", nextPlayerId);
         activePlayerId = await updateActiveSeat(nextPlayerId, gameId);
       } catch (error) {
         console.log(
@@ -268,24 +295,21 @@ const playCard = async (req, res) => {
       break;
   }
   //update everyone in game with the new card played
-  req.app
-    .get("io")
-    .to(gameId + "")
-    .emit("card-played", {
-      gameId: gameId,
-      color: color,
-      symbol: symbol,
-      clientId: userId,
-      cardId: cardId,
-      activePlayerId: activePlayerId,
-    });
+  req.app.get("io").to(gameId.toString()).emit("card-played", {
+    gameId: gameId,
+    color: color,
+    symbol: symbol,
+    clientId: userId,
+    cardId: cardId,
+    activePlayerId: activePlayerId,
+  });
 
   //check the win condition
   try {
-    if (!(await isWin(gameId, userId))) {
+    if (await isWin(gameId, userId)) {
       req.app
         .get("io")
-        .to(gameId + "")
+        .to(gameId.toString())
         .emit("is-win", { winnerName: req.session.user.username });
       return res.status(200).send("Success!");
     }
@@ -315,7 +339,8 @@ const getGame = async (req, res) => {
   }
 
   //get the player's cards in hand (the colors and symbols and ids of the cards)
-  const getPlayerHandQuery = `SELECT * FROM cards WHERE id IN (SELECT card_id FROM game_cards WHERE game_id = $1 AND user_id = $2)`;
+  const getPlayerHandQuery = `SELECT * FROM cards WHERE id IN 
+                                    (SELECT card_id FROM game_cards WHERE game_id = $1 AND user_id = $2 AND discarded = false)`;
   try {
     clientHand = await db.any(getPlayerHandQuery, [gameId, userId]);
     console.log("player hand is: " + JSON.stringify(clientHand)); //debug
