@@ -65,14 +65,13 @@
           </div>
             <% }); %>
             <p id="player-count">
-             Occupancy: <%= players.length %> / <%= maxPlayers %>
+             <%= players.length %> / <%= maxPlayers %>
             </p>
     </div>
     <div class="bottom-container">
       <%- include('partials/chat', { chatMessages: messages, roomId: gameId } ) %>
       <div id="lobby-button-container">
-        <button id="start-button">Start Game</button>
-        <button id="leave-button">Abandon Game</button>
+        <button id="start-button" <%= (players.length === 1) ? 'disabled' : '' %> >Start Game</button>
       </div>
     </div>
 

@@ -448,7 +448,10 @@ const joinGame = async (req, res) => {
     req.app
       .get("io")
       .to(gameId + "")
-      .emit("player-joined");
+      .emit("player-joined", {
+        username: req.session.user.username,
+        image: req.session.user.image,
+      });
     return res.redirect(`/lobby/${gameId}`);
   } catch (err) {
     console.error("error occurred adding user to lobby ", err);
