@@ -198,7 +198,7 @@ playButton.addEventListener("click", async (event) => {
   };
   try {
     const response = await fetch(
-      `http://localhost:3000/game/${gameId}/card/play`,
+      `/game/${gameId}/card/play`,
       {
         method: "POST",
         headers: {
@@ -222,7 +222,7 @@ drawButton.addEventListener("click", async (event) => {
   event.preventDefault();
   try {
     const response = await fetch(
-      `http://localhost:3000/game/${gameId}/card/draw`,
+      `/game/${gameId}/card/draw`,
       { method: "POST" },
     );
     console.log(response);
