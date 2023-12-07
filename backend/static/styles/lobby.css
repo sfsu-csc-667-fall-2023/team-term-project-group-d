@@ -158,6 +158,7 @@ button#start-button:active,
   font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS", sans-serif;
 }
 
-#player-count {
+#player-count,
+#player-count > span {
   color: white;
 }

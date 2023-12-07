@@ -51,23 +51,23 @@
     <h1 id="game-name"><%- gameName %></h1>
     <h2>Party Members:</h2>
     <div id = "player-container">
-     
-        <% players.forEach(player => { %>
-          <div class="player-card-container">
-            <img
-              class="player-card"
-              src= <%= player.image %>
-              alt= <%= player.username %>
-            />
-            <p class="player-name">
-              <%= player.username %>
+      <% players.forEach(player => { %>
+        <div class="player-card-container" id="user-<%= player.id %>">
+          <img
+            class="player-card"
+            src= <%= player.image %>
+            alt= <%= player.username %>
+          />
+          <p class="player-name">
+            <%= player.username %>
           </p>
-          </div>
-            <% }); %>
-            <p id="player-count">
-             <%= players.length %> / <%= maxPlayers %>
-            </p>
+        </div>
+      <% }); %>
+      <p id="player-count">
+        <span id="current-player-count"><%= players.length %></span> / <span id="total-player-count"><%= maxPlayers %></span>
+      </p>
     </div>
+    
     <div class="bottom-container">
       <%- include('partials/chat', { chatMessages: messages, roomId: gameId } ) %>
       <div id="lobby-button-container">
@@ -76,6 +76,7 @@
     </div>
 
     <input type="hidden" name="game-id" id="game-id" value="<%= gameId %>" />
+    <input type="hidden" name="user-id" id="user-id" value="<%= userId %>" />
     <script type="module" src="/lobby.js"></script>
   </body>
 </html>

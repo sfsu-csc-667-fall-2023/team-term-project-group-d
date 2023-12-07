@@ -43,18 +43,51 @@ if (process.env.NODE_ENV == "development") {
 app.use(sessionConfig);
 app.use(setLocalUserData);
 
+const db = require("./db/connection");
+
 //Socket IO
 const io = new Server(httpServer);
 io.engine.use(sessionConfig);
 app.set("io", io);
 
 io.on("connection", (socket) => {
-  if (socket.handshake.query != undefined) {
+  if (socket.handshake.query.gameId != undefined) {
     // join the game room
-    socket.join(socket.handshake.query.id + "");
+    socket.join(socket.handshake.query.gameId + "");
   }
   //join your own room
   socket.join(socket.request.session.id);
+
+  socket.on("disconnect", async () => {
+    if (socket.handshake.query.userId !== undefined) {
+      const { gameId, userId } = socket.handshake.query;
+
+      const removePlayerQuery = `DELETE FROM game_users
+        WHERE users_id = $1
+        AND game_id = $2
+        AND EXISTS (
+          SELECT id
+          FROM games
+          WHERE id = $2
+          AND active = false
+        )`;
+
+      const deleteEmptyLobbyQuery = `DELETE FROM games
+        WHERE id IN (
+            SELECT game_id
+            FROM game_users
+            WHERE game_id = $1
+            GROUP BY game_id
+            HAVING COUNT(users_id) = 0
+        )`;
+
+      await db.none(removePlayerQuery, [userId, gameId]);
+
+      io.to(gameId + "").emit("player-left", { id: userId });
+
+      await db.none(deleteEmptyLobbyQuery, [gameId]);
+    }
+  });
 });
 
 // Mount Routes

@@ -380,7 +380,7 @@ const getGame = async (req, res) => {
 const joinGame = async (req, res) => {
   const { id: gameId } = req.params;
   const { password } = req.body;
-  const { id: userId } = req.session.user;
+  const { id: userId, image, username } = req.session.user;
 
   // Get the lobby if it exists { id, password, max players, player count }
   const getLobbyQuery = `SELECT
@@ -449,8 +449,9 @@ const joinGame = async (req, res) => {
       .get("io")
       .to(gameId + "")
       .emit("player-joined", {
-        username: req.session.user.username,
-        image: req.session.user.image,
+        id: userId,
+        username: username,
+        image: image,
       });
     return res.redirect(`/lobby/${gameId}`);
   } catch (err) {

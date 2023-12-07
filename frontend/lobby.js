@@ -1,9 +1,10 @@
-const gameId = Number(document.getElementById("game-id").value);
+const contextGameId = Number(document.getElementById("game-id").value);
+const contextUserId = Number(document.getElementById("user-id").value);
 const startButton = document.getElementById("start-button");
 
 import { io } from "https://cdn.skypack.dev/socket.io-client"; //idk why this is necessary
 
-const socket = io({ query: { id: gameId } });
+const socket = io({ query: { gameId: contextGameId, userId: contextUserId } });
 
 const shuffleSound = new Audio("/music/shuffle_sound.m4a");
 
@@ -16,35 +17,50 @@ socket.on("game-start", (data) => {
   }, 1500);
 });
 
-socket.on("player-joined", (user) => {
-  //append the new user to the list of users
+socket.on("player-joined", (newUser) => {
+  // Check player doesn't already exist on screen
+  if (document.getElementById(`user-${newUser.id}`) != null) return;
+
+  // Append the new user to the list of users
   const userContainer = document.createElement("div");
   userContainer.classList.add("player-card-container");
+  userContainer.id = `user-${newUser.id}`;
+
   const userImg = document.createElement("img");
-  userImg.src = user.image;
-  userImg.alt = user.username;
+  userImg.src = newUser.image;
+  userImg.alt = newUser.username;
   userImg.classList.add("player-card");
+
   const nameParagraph = document.createElement("p");
-  nameParagraph.innerText = user.username;
+  nameParagraph.innerText = newUser.username;
+
   userContainer.appendChild(userImg);
   userContainer.appendChild(nameParagraph);
+
   const parent = document.getElementById("player-container");
   parent.prepend(userContainer);
-  //update the player count
-  const oldPlayerCount = Number(
-    document.getElementById("player-count").innerText.charAt(0),
-  );
-  const maxPlayers = Number(
-    document.getElementById("player-count").innerText.slice(-1),
-  );
-  document.getElementById("player-count").innerText =
-    oldPlayerCount + 1 + " / " + maxPlayers;
 
-  if (oldPlayerCount + 1 == maxPlayers) {
-    startButton.style.backgroundColor = "green";
-    startButton.style.color = "yellow";
-  }
+  // Update the player count
+  const playerCount = document.getElementById("current-player-count");
+  const maxPlayers = document.getElementById("total-player-count");
+
+  playerCount.innerText = Number(playerCount.innerText) + 1;
+
+  // if (Number(playerCount.innerText) == Number(maxPlayers.innerText)) {
+  //   startButton.style.backgroundColor = "green";
+  //   startButton.style.color = "yellow";
+  // }
+
   startButton.disabled = false;
+});
+
+socket.on("player-left", (missingUser) => {
+  // Remove the user from the screen
+  document.getElementById(`user-${missingUser.id}`).remove();
+
+  // Update the player count
+  const playerCount = document.getElementById("current-player-count");
+  playerCount.innerText = Number(playerCount.innerText) - 1;
 });
 
 const startGame = async () => {
