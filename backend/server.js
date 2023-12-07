@@ -72,13 +72,15 @@ io.on("connection", (socket) => {
           AND active = false
         )`;
 
-      const deleteEmptyLobbyQuery = `DELETE FROM games
+      const deleteEmptyLobbyQuery = `
+        DELETE FROM games
         WHERE id IN (
-            SELECT game_id
-            FROM game_users
-            WHERE game_id = $1
-            GROUP BY game_id
-            HAVING COUNT(users_id) = 0
+          SELECT g.id
+          FROM games g
+          LEFT JOIN game_users gu ON g.id = gu.game_id
+          WHERE g.id = $1
+          GROUP BY g.id
+          HAVING COUNT(users_id) = 0
         )`;
 
       await db.none(removePlayerQuery, [userId, gameId]);
