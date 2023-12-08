@@ -1,10 +1,10 @@
-const reqLoggedIn = (req, res, next) => {
+const isAuthorized = (req, res, next) => {
   // If user session, we are logged in
   if (res.locals.user) next();
   else res.redirect("/login");
 };
 
-const reqLoggedOut = (req, res, next) => {
+const notAuthorized = (req, res, next) => {
   // If no user session, we are logged out
   if (!res.locals.user) next();
   // TODO: Redirect user somewhere if they try to access Views only accessible for unauthorized users (/login, /register, etc)
@@ -12,4 +12,4 @@ const reqLoggedOut = (req, res, next) => {
   // res.redirect('/some-view');
 };
 
-module.exports = { reqLoggedIn, reqLoggedOut };
+module.exports = { isAuthorized, notAuthorized };
