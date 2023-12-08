@@ -197,16 +197,13 @@ playButton.addEventListener("click", async (event) => {
     symbol: selectedCard.symbol,
   };
   try {
-    const response = await fetch(
-      `/game/${gameId}/card/play`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(body),
+    const response = await fetch(`/game/${gameId}/card/play`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-    );
+      body: JSON.stringify(body),
+    });
     console.log(response);
     if (response.status === 400) {
       console.log("its not your turn");
@@ -221,10 +218,9 @@ const drawButton = document.getElementById("draw-button");
 drawButton.addEventListener("click", async (event) => {
   event.preventDefault();
   try {
-    const response = await fetch(
-      `/game/${gameId}/card/draw`,
-      { method: "POST" },
-    );
+    const response = await fetch(`/game/${gameId}/card/draw`, {
+      method: "POST",
+    });
     console.log(response);
   } catch (error) {
     console.log(error);
@@ -249,8 +245,7 @@ const handleAudioClick = (e) => {
 const audioButton = document.getElementById("music-button");
 audioButton.addEventListener("click", handleAudioClick);
 
-const handleExitGame = (gameId, userId) => {
-  alert("TODO : delete game");
+const handleExitGame = () => {
   window.location.href = "/";
 };
 
