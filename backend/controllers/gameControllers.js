@@ -339,6 +339,11 @@ const playCard = async (req, res) => {
         .to(gameId.toString())
         .emit("is-win", { winnerName: req.session.user.username });
       logToChat(req, gameId, `${req.session.user.username} won!`);
+
+      // game_cards and game_users set to cascade when
+      const deleteGameQuery = `DELETE FROM games WHERE id = $1`;
+      await db.none(deleteGameQuery, [gameId]);
+
       return res.status(200).send("Success!");
     }
   } catch (err) {
