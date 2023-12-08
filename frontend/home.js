@@ -1,5 +1,10 @@
 /// Get List of Lobbies
 // Game List container
+
+import { io } from "https://cdn.skypack.dev/socket.io-client"; //idk why this is necessary
+
+const socket = io();
+
 const gameList = document.getElementById("game-list");
 const activeGameList = document.getElementById("active-game-list");
 const getLobbies = async () => {
@@ -264,4 +269,8 @@ buttonListFilterPrivate.addEventListener("change", (event) => {
   if (!event.target.checked) buttonListFilterAll.checked = false;
 
   displayFilteredList();
+});
+
+socket.on("lobby-created", (lobby) => {
+  displayGameInList(lobby);
 });

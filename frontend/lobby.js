@@ -40,17 +40,13 @@ socket.on("player-joined", (user) => {
   document.getElementById("player-count").innerText =
     oldPlayerCount + 1 + " / " + maxPlayers;
 
-  if (oldPlayerCount + 1 == maxPlayers) {
-    startButton.style.backgroundColor = "green";
-    startButton.style.color = "yellow";
-  }
   startButton.disabled = false;
 });
 
 const startGame = async () => {
   const gameId = Number(document.getElementById("game-id").value);
   try {
-    const res = await fetch("/game/startGame", {
+    const res = await fetch(`/game/${gameId}/start`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

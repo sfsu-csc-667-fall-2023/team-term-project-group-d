@@ -490,6 +490,14 @@ const createGame = async (req, res) => {
     const gameId = lobby.id;
     await db.none(joinLobbyQuery, [userId, gameId]);
 
+    req.app.get("io").emit("lobby-created", {
+      id: gameId,
+      name,
+      max_players,
+      has_password: password != null,
+      player_count: 1,
+    });
+
     return res.redirect(`/lobby/${gameId}`);
   } catch (err) {
     console.error("error adding user to lobby ", err);
@@ -498,8 +506,8 @@ const createGame = async (req, res) => {
 };
 
 const startGame = async (req, res) => {
-  const gameId = req.body.gameId;
-  const userId = req.session.user.id;
+  const { id: gameId } = req.params;
+  const { id: userId } = req.session.user;
   //TODO: check that the user is allowed to start this game
   //  1. Anyone within the lobby can start the game
   //  2. You should not be able to start the game if only person is in the lobby

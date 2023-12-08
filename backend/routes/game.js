@@ -22,6 +22,6 @@ gameRouter.get("/:id", getGame);
 
 gameRouter.post("/:id/card/draw", drawCard);
 
-gameRouter.post("/startGame", startGame);
+gameRouter.post("/:id/start", startGame);
 
 module.exports = gameRouter;
