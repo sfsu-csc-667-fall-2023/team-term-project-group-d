@@ -46,7 +46,7 @@ const drawCards = async (currentPlayerId, gameId, drawNumber) => {
     ]);
     console.log(deckCount);
     if (!discardCount || discardCount.count < drawNumber) {
-      console.error("No more cards in discard pile or deck, ending game"); //TODO send message with socket io
+      console.error("No more cards in discard pile or deck, ending game"); //TODO send message and skip player
       return;
     } else {
       const restoreDeckQuery = `UPDATE game_cards SET user_id = NULL, discarded = false WHERE ( discarded = true AND game_id = $1 )`;
@@ -66,8 +66,10 @@ const drawCards = async (currentPlayerId, gameId, drawNumber) => {
 
   const getDrawnCardsQuery = `SELECT * FROM cards WHERE id IN ($1:csv)`;
   const drawnCardsData = await db.any(getDrawnCardsQuery, [cardIds]);
-  console.log("drawing cards: ", JSON.stringify(drawnCardsData));
 
+  const updatePlayerDeclaredUno =
+    "UPDATE game_users SET declared_uno = false WHERE game_id = $1 AND users_id = $2";
+  await db.none(updatePlayerDeclaredUno, [gameId, currentPlayerId]);
   return drawnCardsData;
 };
 
@@ -109,7 +111,7 @@ const isOutOfTurn = async (gameId, userId) => {
 const drawCard = async (req, res) => {
   const userId = req.session.user.id;
   const gameId = req.params.id;
-  let activePlayerId, drawnCard;
+  let activePlayerId, drawnCard, activePlayerHandSize;
 
   if (await isOutOfTurn(gameId, userId)) {
     console.error("Player is trying to move out of turn");
@@ -125,7 +127,16 @@ const drawCard = async (req, res) => {
 
   try {
     activePlayerId = await updateActiveSeat(userId, gameId);
-
+    const getNextPlayerHandSize = `SELECT COUNT(*) FROM game_cards WHERE game_id = $1 AND user_id = $2 AND discarded = false`;
+    try {
+      activePlayerHandSize = await db.one(getNextPlayerHandSize, [
+        gameId,
+        activePlayerId,
+      ]);
+    } catch (err) {
+      console.error("error getting next player hand size ", err);
+      return res.status(500).send(`Could not get next player hand size`);
+    }
     req.app
       .get("io")
       .to(gameId + "")
@@ -133,6 +144,7 @@ const drawCard = async (req, res) => {
         gameId: gameId,
         clientId: userId,
         activePlayerId: activePlayerId,
+        activePlayerHandSize: activePlayerHandSize.count,
         drawnSymbol: drawnCard[0].symbol,
         drawnColor: drawnCard[0].color,
         drawnId: drawnCard[0].id,
@@ -151,7 +163,7 @@ const isWin = async (gameId, userId) => {
 };
 
 const playCard = async (req, res) => {
-  let { cardId, color, symbol } = req.body;
+  let { cardId, color, symbol, isDeclared } = req.body;
   const userId = req.session.user.id;
   const gameId = req.params.id;
 
@@ -174,7 +186,8 @@ const playCard = async (req, res) => {
   const updatePlayerHandQuery = `UPDATE game_cards 
   SET discarded = true
   WHERE game_id = $1 AND card_id = $2 AND user_id = $3 RETURNING card_id`;
-
+  const updatePlayerDeclaredUno =
+    "UPDATE game_users SET declared_uno = true WHERE game_id = $1 AND users_id = $2";
   try {
     const card = await db.oneOrNone(updatePlayerHandQuery, [
       gameId,
@@ -208,6 +221,15 @@ const playCard = async (req, res) => {
     } catch (error) {
       console.log("Error reversing direction", error);
       return res.status(500).send("Error reversing direction" + error);
+    }
+  }
+
+  if (isDeclared) {
+    try {
+      await db.none(updatePlayerDeclaredUno, [gameId, userId]);
+    } catch (error) {
+      console.log("Error updating player declared uno", error);
+      return res.status(500).send("Error updating player declared uno" + error);
     }
   }
 
@@ -274,6 +296,18 @@ const playCard = async (req, res) => {
     default:
       break;
   }
+  const getNextPlayerHandSize = `SELECT COUNT(*) FROM game_cards WHERE game_id = $1 AND user_id = $2 AND discarded = false`;
+  let nextPlayerHandSize;
+  try {
+    nextPlayerHandSize = await db.one(getNextPlayerHandSize, [
+      gameId,
+      activePlayerId,
+    ]);
+  } catch (err) {
+    console.error("error getting next player hand size ", err);
+    return res.status(500).send(`Could not get next player hand size`);
+  }
+
   //update everyone in game with the new card played
   req.app.get("io").to(gameId.toString()).emit("card-played", {
     gameId: gameId,
@@ -282,6 +316,7 @@ const playCard = async (req, res) => {
     clientId: userId,
     cardId: cardId,
     activePlayerId: activePlayerId,
+    activePlayerHandSize: nextPlayerHandSize.count,
   });
 
   //check the win condition
@@ -349,7 +384,6 @@ const getGame = async (req, res) => {
 
   try {
     playerData = await db.any(getPlayerData, [gameId, userId]);
-    console.log("player data is: ", JSON.stringify(playerData));
   } catch (err) {
     console.error("error getting player hand size ", err);
     return res.status(500).send(`Could not get player hand size`);
@@ -537,6 +571,61 @@ const getMyGames = async (req, res) => {
   }
 };
 
+const unoAccuse = async (req, res) => {
+  const userId = req.session.user.id;
+  console.log("the user id is: " + userId);
+  const gameId = req.params.id;
+  const getCurrentPlayerQuery = `SELECT current_player_id FROM games WHERE id = $1`;
+  let currentPlayerId;
+  try {
+    currentPlayerId = (await db.one(getCurrentPlayerQuery, [gameId]))
+      .current_player_id;
+  } catch (err) {
+    console.error("error getting current player id ", err);
+    return res.status(500).send(`Could not get current player id`);
+  }
+  //check if any player has 1 card in hand and if they havent declared uno
+  const doesAnyoneHaveUnoQuery = `  SELECT users_id 
+  FROM game_users 
+  WHERE game_id = $1
+  AND declared_uno = false
+  AND users_id IN
+  (SELECT user_id
+  FROM game_cards
+  WHERE game_id = $1
+    AND user_id != $2
+    AND discarded = false
+  GROUP BY user_id
+  HAVING COUNT(*) = 1);`;
+  let unoIds;
+  try {
+    unoIds = (await db.any(doesAnyoneHaveUnoQuery, [gameId, userId])).map(
+      (userId) => userId.users_id,
+    );
+    console.log("uno ids are: ", unoIds);
+  } catch (err) {
+    console.error("error getting uno ids ", err);
+    return res.status(500).send(`Could not get uno ids`);
+  }
+  let cards;
+  //make every player with uno draw 2 cards
+  try {
+    for (let i = 0; i < unoIds.length; i++) {
+      cards = await drawCards(unoIds[i], gameId, 2);
+      console.log(cards);
+      req.app.get("io").to(gameId.toString()).emit("cards-drawn", {
+        gameId: gameId,
+        cards,
+        currentPlayerId: unoIds[i],
+      });
+    }
+  } catch (err) {
+    console.log("Error updating game_cards", err);
+    return res.status(500).send("Error updating game_cards " + err);
+  }
+  return res.status(200).send("Success!");
+};
+
 module.exports = {
   playCard,
   getGame,
@@ -545,4 +634,5 @@ module.exports = {
   createGame,
   getMyGames,
   startGame,
+  unoAccuse,
 };
