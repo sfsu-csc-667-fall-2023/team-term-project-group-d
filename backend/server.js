@@ -24,7 +24,11 @@ app.use(express.static("frontend"));
 const { sessionConfig, setLocalUserData } = require("./db/session");
 const { displayErrors } = require("./middleware/display-errors");
 
-if (process.env.NODE_ENV == "development") {
+if (process.env.NODE_ENV === "production") {
+  app.set("trust proxy", true);
+}
+
+if (process.env.NODE_ENV === "development") {
   const livereload = require("livereload");
   const connectLiveReload = require("connect-livereload");
 
