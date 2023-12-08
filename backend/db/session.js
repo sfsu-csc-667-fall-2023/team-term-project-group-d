@@ -15,6 +15,7 @@ const sessionConfig = expressSession({
   resave: false,
   saveUninitialized: true,
   cookie: {
+    secure: true,
     maxAge: parseInt(process.env.COOKIE_MAX_AGE) || 10 * 24 * 60 * 60 * 1000,
   },
 });
