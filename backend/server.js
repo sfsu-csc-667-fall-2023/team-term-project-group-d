@@ -19,11 +19,12 @@ app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
 app.use(express.static(path.join(__dirname, "static")));
 app.use(express.static("frontend"));
+app.enable("trust proxy");
 
 // Middleware Imports
 const { sessionConfig, setLocalUserData } = require("./db/session");
 const { displayErrors } = require("./middleware/display-errors");
-app.set("trust proxy", 1);
+
 if (process.env.NODE_ENV == "development") {
   const livereload = require("livereload");
   const connectLiveReload = require("connect-livereload");
