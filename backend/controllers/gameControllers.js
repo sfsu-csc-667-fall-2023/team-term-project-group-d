@@ -415,6 +415,7 @@ const getGame = async (req, res) => {
   currentCard.color = game.active_color;
 
   res.render("game.ejs", {
+    clientName: req.session.user.username,
     gameId: gameId,
     gameName: game.name,
     clientId: userId,
