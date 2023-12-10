@@ -2,10 +2,9 @@ const gameId = Number(document.getElementById("game-id").value);
 const clientId = Number(document.getElementById("client-id").value);
 const client = document.getElementsByClassName("client-hand")[0];
 
-import { io } from "https://cdn.skypack.dev/socket.io-client"; //idk why this is necessary
+import { io } from "https://cdn.skypack.dev/socket.io-client";
 
-//sound effect that plays when anyone plays a card
-const playSound = new Audio("/music/play_card.m4a");
+const playCardSound = new Audio("/music/play_card.m4a");
 
 const hideButtons = () => {
   document.getElementById("play-button").classList.add("hidden");
@@ -17,8 +16,8 @@ const showButtons = () => {
 };
 
 const updateTurnDisplay = (clientId, activePlayerId, activePlayerHandSize) => {
-  //play the play card sound effect
-  playSound.play();
+  playCardSound.play();
+
   //update the display of the player whose turn it is
   if (clientId === activePlayerId) {
     showButtons();
@@ -198,22 +197,24 @@ playButton.addEventListener("click", async (event) => {
     } while (!validColors.includes(cardColor.toLowerCase()));
   }
   const body = {
-    cardId: selectedCardId,
     color: cardColor,
     symbol: selectedCard.symbol,
     isDeclared: document.getElementById("declare-uno-button").checked,
   };
   try {
-    const response = await fetch(`/game/${gameId}/card/play`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
+    const response = await fetch(
+      `/game/${gameId}/card/${selectedCardId}/play`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
       },
-      body: JSON.stringify(body),
-    });
+    );
     console.log(response);
     if (response.status === 400) {
-      console.log("its not your turn");
+      console.error("its not your turn");
       alert("It's not your turn!");
     }
   } catch (error) {
