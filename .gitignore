@@ -3,3 +3,4 @@ node_modules/*
 .idea
 .vscode/*
 /backend/static/scripts/bundle.js
+/backend/static/scripts/chat.js
