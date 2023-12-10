@@ -8,64 +8,28 @@
     <script src="/scripts/chat.js" defer></script>
   </head>
   <body>
-    <header>
-      <div class="inner">
-        <div class="name">
-          <div>
-            <a href="/"><h1>HOME</h1></a>
-          </div>
-        </div>
-
-        <% if (user) { %>
-        <nav>
-          <li>
-            <span
-              ><a href="/user/logout"><h3>Signout</h3></a></span
-            >
-          </li>
-          <li>
-            <span
-              ><h3><%= user.username %></h3></span
-            >
-          </li>
-        </nav>
-        <%} else { %>
-        <nav>
-          <li>
-            <span
-              ><a href="/login"><h3>LOGIN</h3></a></span
-            >
-          </li>
-          <li>
-            <span
-              ><a href="/register"><h3>REGISTER</h3></a></span
-            >
-          </li>
-        </nav>
-        <%} %>
-      </div>
-    </header>
+    <%- include('partials/header') %>
 
     <% if (user) { %>
-    <div id="auth-container">
-      <div id="left">
-        <%- include('partials/lobbyList') %>
-        <div id="create-game-button-container">
-          <button id="create-game-button">Create a game</button>
+      <div id="auth-container">
+        <div id="left">
+          <%- include('partials/lobbyList') %>
+          <div id="create-game-button-container">
+            <button id="create-game-button">Create a game</button>
+          </div>
+        </div>
+        <div id="middle">
+          <%- include('partials/activeGamesList') %>
+        </div>
+        <div id="right">
+          <% if (messages || messages == null) {%>
+            <%- include('partials/chat', { chatMessages: messages, roomId: 0 } ) %>
+          <% }%>
         </div>
       </div>
-      <div id="middle">
-        <%- include('partials/activeGamesList') %>
-      </div>
-      <div id="right">
-        <% if (messages || messages == null) {%>
-        <%- include('partials/chat', { chatMessages: messages, roomId: 0 } ) %>
-        <% }%>
-      </div>
-    </div>
 
-    <%- include('partials/createGame') %>
-    <%- include('partials/protectedGameForm') %>
+      <%- include('partials/createGame') %>
+      <%- include('partials/protectedGameForm') %>
     <%} %>
 
     <script src="/home.js" type="module"></script>
