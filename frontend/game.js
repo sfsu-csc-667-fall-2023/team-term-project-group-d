@@ -191,9 +191,11 @@ playButton.addEventListener("click", async (event) => {
     return;
   }
 
-  //TODO detect wild card. Prompt user for color
   if (selectedCard.color === "wild") {
-    cardColor = prompt("Choose a color: red, blue, green, or yellow");
+    const validColors = ["red", "green", "yellow", "blue"];
+    do {
+      cardColor = prompt("Choose a color: red, blue, green, or yellow");
+    } while (!validColors.includes(cardColor.toLowerCase()));
   }
   const body = {
     cardId: selectedCardId,
