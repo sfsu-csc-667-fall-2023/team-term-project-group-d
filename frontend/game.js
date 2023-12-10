@@ -16,17 +16,25 @@ const showButtons = () => {
   document.getElementById("draw-button").classList.remove("hidden");
 };
 
-const updateTurnDisplay = (clientId, activePlayerId) => {
+const updateTurnDisplay = (clientId, activePlayerId, activePlayerHandSize) => {
   //play the play card sound effect
   playSound.play();
   //update the display of the player whose turn it is
   if (clientId === activePlayerId) {
     showButtons();
     client.style.border = "black solid 10px";
+    if (activePlayerHandSize == 2) {
+      document
+        .getElementById("declare-uno-container")
+        .classList.remove("hidden");
+    } else {
+      document.getElementById("declare-uno-container").classList.add("hidden");
+    }
   } else {
     hideButtons();
     document.getElementById(`opponent-${activePlayerId}`).style.border =
       "yellow solid 3px";
+    document.getElementById("declare-uno-container").classList.add("hidden");
   }
 };
 
@@ -55,7 +63,7 @@ socket.on("card-played", (data) => {
     document.getElementById(`opponent-${data.clientId}`).style.border = "none";
   }
 
-  updateTurnDisplay(clientId, data.activePlayerId);
+  updateTurnDisplay(clientId, data.activePlayerId, data.activePlayerHandSize);
 });
 
 socket.on("cards-drawn", (data) => {
@@ -121,8 +129,7 @@ socket.on("card-drawn", (data) => {
       Number(playerHandCount.innerText.slice(0, -1)) + 1 + "X";
     document.getElementById(`opponent-${data.clientId}`).style.border = "none";
   }
-  //update the display of the player whose turn it is
-  updateTurnDisplay(clientId, data.activePlayerId);
+  updateTurnDisplay(clientId, data.activePlayerId, data.activePlayerHandSize);
 });
 
 socket.on("is-win", (data) => {
@@ -146,7 +153,6 @@ if (clientId === Number(activePlayerId)) {
   hideButtons();
 }
 
-//check if the card arg is allowed to be played
 const isLegalMove = (card) => {
   if (card.color === "wild") return true;
   const discardCard = document.getElementById("discard-card");
@@ -173,7 +179,6 @@ for (let i = 0; i < hand.length; i++) {
 const playButton = document.getElementById("play-button");
 playButton.addEventListener("click", async (event) => {
   event.preventDefault();
-  console.log("the selected id is: " + selectedId);
   let cardColor = document
     .getElementById(selectedId)
     .getAttribute("card-color");
@@ -190,23 +195,20 @@ playButton.addEventListener("click", async (event) => {
   if (selectedCard.color === "wild") {
     cardColor = prompt("Choose a color: red, blue, green, or yellow");
   }
-  console.log("the selected color is: " + cardColor);
   const body = {
     cardId: selectedCardId,
     color: cardColor,
     symbol: selectedCard.symbol,
+    isDeclared: document.getElementById("declare-uno-button").checked,
   };
   try {
-    const response = await fetch(
-      `/game/${gameId}/card/play`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(body),
+    const response = await fetch(`/game/${gameId}/card/play`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-    );
+      body: JSON.stringify(body),
+    });
     console.log(response);
     if (response.status === 400) {
       console.log("its not your turn");
@@ -221,15 +223,29 @@ const drawButton = document.getElementById("draw-button");
 drawButton.addEventListener("click", async (event) => {
   event.preventDefault();
   try {
-    const response = await fetch(
-      `/game/${gameId}/card/draw`,
-      { method: "POST" },
-    );
+    const response = await fetch(`/game/${gameId}/card/draw`, {
+      method: "POST",
+    });
     console.log(response);
   } catch (error) {
     console.log(error);
   }
 });
+
+const handleUnoClick = async (e) => {
+  e.preventDefault();
+  try {
+    const response = await fetch(`/game/${gameId}/unoAccuse`, {
+      method: "POST",
+    });
+    console.log(response);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const unoButton = document.getElementById("uno-button");
+unoButton.addEventListener("click", handleUnoClick);
 
 const soundTrack = new Audio("/music/uno_music.m4a");
 soundTrack.volume = 0.3;

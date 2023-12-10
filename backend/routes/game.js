@@ -8,6 +8,7 @@ const {
   createGame,
   getMyGames,
   startGame,
+  unoAccuse,
 } = require("../controllers/gameControllers");
 
 gameRouter.post("/:id/card/play", playCard);
@@ -23,5 +24,7 @@ gameRouter.get("/:id", getGame);
 gameRouter.post("/:id/card/draw", drawCard);
 
 gameRouter.post("/startGame", startGame);
+
+gameRouter.post("/:id/unoAccuse", unoAccuse);
 
 module.exports = gameRouter;
