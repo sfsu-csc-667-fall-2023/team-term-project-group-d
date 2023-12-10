@@ -41,8 +41,10 @@
       </button>
 
       <div id="error-cards-container">
-        <% if (errors) { %> <%- include('partials/errorCard', { cardId:
-        'errors-card-1', display: 'flex', message: errors })%>
+        <% if (messages.length > 0) { %>
+          <% messages.forEach((error, idx) => { %>
+            <%- include('partials/errorCard', { cardId: `errors-card-${idx}`, display: 'flex', error })%>
+          <% }) %>
         <% } %>
       </div>
       <script src="/login.js"></script>
