@@ -50,11 +50,13 @@
       </form>
 
       <div id="error-cards-container">
-        <% if (errors) { %>
-        <%- include('partials/errorCard', { cardId: 'errors-card-1', display: 'block', message: errors })%>
+        <% if (messages.length > 0) { %>
+          <% messages.forEach((error, idx) => { %>
+            <%- include('partials/errorCard', { cardId: `errors-card-${idx}`, display: 'block', error })%>
+          <% }) %>
         <% } %>
 
-        <%- include('partials/errorCard', { cardId: 'match-password-card', display: 'none', message: 'Password and Confirm Password do not match' })%>
+        <%- include('partials/errorCard', { cardId: 'match-password-card', display: 'none', error: 'Password and Confirm Password do not match' })%>
       </div>
     </div>
     <script src="/register.js"></script>

@@ -1,13 +1,14 @@
 require("dotenv").config();
 
+const express = require("express");
 const path = require("path");
 const morgan = require("morgan");
 const cookieParser = require("cookie-parser");
 const { createServer } = require("http");
 const { Server } = require("socket.io");
+const flash = require("express-flash");
 
 // Express
-const express = require("express");
 const app = express();
 const httpServer = createServer(app);
 const PORT = process.env.PORT || 3000;
@@ -46,6 +47,7 @@ if (process.env.NODE_ENV === "development") {
 // Session Setup (Start Middleware)
 app.use(sessionConfig);
 app.use(setLocalUserData);
+app.use(flash());
 
 //Socket IO
 const io = new Server(httpServer);

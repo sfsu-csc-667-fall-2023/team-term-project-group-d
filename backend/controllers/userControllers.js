@@ -1,35 +1,32 @@
-const connection = require("../db/connection");
+const db = require("../db/connection");
 const bcrypt = require("bcrypt");
 const { createHash } = require("crypto");
 
 const register = async (req, res) => {
   const { username, password, email } = req.body;
+
   if (username && password && email) {
-    const salt = "batteryAnt"; //TODO find out what this is for...
-    const imageUrl = "/"; //TODO: change this to the default image url
+    const salt = "batteryAnt";
     const selectUserQuery =
-      "SELECT * FROM users WHERE username = $1 or email = $2";
+      "SELECT email, username FROM users WHERE username = $1 or email = $2";
+
     try {
-      const result = await connection.query(selectUserQuery, [username, email]);
-      const errors = [];
+      const result = await db.query(selectUserQuery, [username, email]);
+
       if (result.length > 0) {
         result.forEach((user) => {
-          if (user.username === username) {
-            errors.push("username is taken");
-          }
+          if (user.username === username)
+            req.flash("error", "Username is taken");
 
-          if (user.email === email) {
-            errors.push("email is taken");
-          }
+          if (user.email === email) req.flash("error", "Email is taken");
         });
 
-        req.session.errors = errors.join("\n");
         return res.redirect("/register");
       }
     } catch (error) {
       console.error(error);
 
-      req.session.errors = "Internal Server Errors";
+      req.flash("error", "Internal Server Errors");
       return res.redirect("/register");
     }
 
@@ -37,34 +34,33 @@ const register = async (req, res) => {
       if (err) {
         console.error("error hashing password: " + err);
 
-        req.session.errors = "Internal Server Errors";
+        req.flash("error", "Internal Server Errors");
         return res.redirect("/register");
       }
 
-      const profileImageHash = createHash("sha256").update(email).digest("hex"); // 64 char hash
-      const profileImageURL = `https://robohash.org/${profileImageHash}`; // 21 + 64 = 85 chars
+      const imageHash = createHash("sha256").update(email).digest("hex"); // 64 char hash
+      const imageURL = `https://robohash.org/${imageHash}`; // 21 + 64 = 85 chars
 
       const insertNewUserQuery =
         "INSERT INTO users (username, password, email, salt, image) VALUES ($1, $2, $3, $4, $5)";
       try {
-        await connection.query(insertNewUserQuery, [
+        await db.query(insertNewUserQuery, [
           username,
           hashedPassword,
           email,
           salt,
-          profileImageURL,
+          imageURL,
         ]);
 
         res.redirect("/login");
       } catch (err) {
         console.error("error inserting into db: " + err);
 
-        req.session.errors = "Internal Server Error";
+        req.flash("error", "Internal Server Errors");
         return res.redirect("/register");
       }
     });
   } else {
-    req.session.errors = null;
     return res.redirect("/register");
   }
 };
@@ -76,11 +72,10 @@ const login = async (req, res) => {
     const querySelectUser =
       "SELECT * FROM users WHERE (username = $1 OR email = $1)";
 
-    await connection
+    await db
       .oneOrNone(querySelectUser, [usernameOrEmail])
       .then(async (user) => {
         if (user && (await bcrypt.compare(password, user.password))) {
-          // TODO: Define all data from DB we want to pass to views on response.locals, or simply replace this all with 'isLoggedIn: true'
           req.session.user = {
             id: user.id,
             username: user.username,
@@ -88,10 +83,9 @@ const login = async (req, res) => {
             image: user.image,
           };
 
-          req.session.messages = null;
           return res.redirect("/");
         } else {
-          req.session.errors = "Invalid username or password";
+          req.flash("error", "Invalid username or password");
           return res.redirect("/login");
         }
       })
@@ -100,18 +94,19 @@ const login = async (req, res) => {
         return res.redirect("/login");
       });
   } else {
-    req.session.errors = "Must provide both username/email and password";
+    req.flash("error", "Must provide both username/email and password");
     return res.redirect("/login");
   }
 };
 
-const logout = (request, response) => {
-  request.session.destroy((err) => {
+const logout = (req, res) => {
+  req.session.destroy((err) => {
     if (err) {
       console.error(err);
-      // Todo: A proper redirect or something after failed logout
-      response.send("Error occurred");
-    } else response.redirect("/login");
+
+      req.flash("error", "Error logging out");
+      return res.redirect("/");
+    } else return res.redirect("/login");
   });
 };
 
