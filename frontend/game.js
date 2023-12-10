@@ -23,10 +23,11 @@ const updateTurnDisplay = (clientId, activePlayerId, activePlayerHandSize) => {
   if (clientId === activePlayerId) {
     showButtons();
     client.style.border = "black solid 10px";
-    if (activePlayerHandSize == 2) {
+    if (activePlayerHandSize === "2") {
       document
         .getElementById("declare-uno-container")
         .classList.remove("hidden");
+      document.getElementById("declare-uno-button").checked = false;
     } else {
       document.getElementById("declare-uno-container").classList.add("hidden");
     }
@@ -96,7 +97,6 @@ socket.on("cards-drawn", (data) => {
     );
     playerHandCount.innerText =
       Number(playerHandCount.innerText.slice(0, -1)) + data.cards.length + "X";
-    document.getElementById(`opponent-${data.clientId}`).style.border = "none";
   }
 });
 
@@ -169,7 +169,7 @@ for (let i = 0; i < hand.length; i++) {
     let secondHalfOfId = selectedId.split("-")[1]; //selectedId looks like game#15-card#11 for example
     selectedCardId = secondHalfOfId.substring(5, secondHalfOfId.length); //this gets the actual card id
     for (let j = 0; j < hand.length; j++) {
-      if (hand.item(j) != event.target)
+      if (hand.item(j) !== event.target)
         hand.item(j).classList.remove("selected");
     }
     event.target.classList.toggle("selected");
