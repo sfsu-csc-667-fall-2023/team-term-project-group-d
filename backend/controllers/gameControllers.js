@@ -339,8 +339,9 @@ const playCard = async (req, res) => {
         .to(gameId.toString())
         .emit("is-win", { winnerName: req.session.user.username });
       logToChat(req, gameId, `${req.session.user.username} won!`);
-      return res.status(200).send("Success!");
     }
+
+    return res.status(200).send("Success!");
   } catch (err) {
     console.error("error checking win condition ", err);
     return res.status(500).send(`Could not check win condition`);
