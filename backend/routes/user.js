@@ -21,7 +21,7 @@ userRouter.post(
   login,
 );
 
-userRouter.get("/logout", isAuthorized, logout);
+userRouter.post("/logout", isAuthorized, logout);
 
 // For testing if sessions working
 userRouter.get("/checkauth", (req, res) => {

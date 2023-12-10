@@ -9,64 +9,27 @@
     <script src="/scripts/chat.js" defer></script>
   </head>
   <body>
-    <header>
-      <div class="inner">
-        <div class="name">
-          <div>
-            <a href="/"><h1>HOME</h1></a>
-          </div>
-        </div>
-
-        <% if (user) { %>
-        <nav>
-          <li>
-            <span
-              ><a href="/user/logout"><h3>Signout</h3></a></span
-            >
-          </li>
-          <li>
-            <span
-              ><h3><%= user.username %></h3></span
-            >
-          </li>
-        </nav>
-        <%} else { %>
-        <nav>
-          <li>
-            <span
-              ><a href="/login"><h3>LOGIN</h3></a></span
-            >
-          </li>
-          <li>
-            <span
-              ><a href="/register"><h3>REGISTER</h3></a></span
-            >
-          </li>
-        </nav>
-        <%} %>
-      </div>
-    </header>
-
+    <%- include('partials/header') %>
 
     <h1 id="game-name"><%- gameName %></h1>
     <h2>Party Members:</h2>
     <div id = "player-container">
-     
-        <% players.forEach(player => { %>
-          <div class="player-card-container">
-            <img
-              class="player-card"
-              src= <%= player.image %>
-              alt= <%= player.username %>
-            />
-            <p class="player-name">
-              <%= player.username %>
+      <% players.forEach(player => { %>
+        <div class="player-card-container">
+          <img
+            class="player-card"
+            src= <%= player.image %>
+            alt= <%= player.username %>
+          />
+          <p class="player-name">
+            <%= player.username %>
           </p>
-          </div>
-            <% }); %>
-            <p id="player-count">
-             <%= players.length %> / <%= maxPlayers %>
-            </p>
+        </div>
+      <% }); %>
+
+      <p id="player-count">
+        <%= players.length %> / <%= maxPlayers %>
+      </p>
     </div>
     <div class="bottom-container">
       <%- include('partials/chat', { chatMessages: messages, roomId: gameId } ) %>
