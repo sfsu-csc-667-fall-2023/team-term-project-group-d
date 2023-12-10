@@ -1,0 +1,41 @@
+<header>
+  <div class="inner">
+    <div class="name">
+      <div>
+        <a href="/"><h1>HOME</h1></a>
+      </div>
+    </div>
+
+    <nav>
+      <% if (user) { %>
+        <li>
+          <span>
+            <form action="/user/logout" method="post" id="logout-form">
+              <a href="#" onclick="document.getElementById('logout-form').submit();">
+                <h3>Signout</h3>
+              </a>
+            </form>
+          </span>
+        </li>
+
+        <li>
+          <span>
+            <h3><%= user.username %></h3>
+          </span>
+        </li>
+      <%} else { %>
+        <li>
+          <span>
+            <a href="/login"><h3>LOGIN</h3></a>
+          </span>
+        </li>
+
+        <li>
+          <span>
+            <a href="/register"><h3>REGISTER</h3></a>
+          </span>
+        </li>
+      <%} %>
+    </nav>
+  </div>
+</header>
