@@ -22,7 +22,7 @@ const updateTurnDisplay = (clientId, activePlayerId, activePlayerHandSize) => {
   //update the display of the player whose turn it is
   if (clientId === activePlayerId) {
     showButtons();
-    client.style.border = "black solid 10px";
+    client.classList.add("active-border");
     if (activePlayerHandSize == 2) {
       document
         .getElementById("declare-uno-container")
@@ -53,7 +53,7 @@ socket.on("card-played", (data) => {
       `game#${gameId}-card#${data.cardId}`,
     );
     cardToRemove.remove();
-    client.style.border = "none";
+    client.classList.remove("active-border");
   } else {
     //update the hand count of the player who played the card
     const playerHandCount = document.getElementById(`hand-${data.clientId}`);
@@ -122,7 +122,7 @@ socket.on("card-drawn", (data) => {
       event.target.classList.toggle("selected");
     });
     client.appendChild(newCard);
-    client.style.border = "none";
+    client.classList.remove("active-border");
   } else {
     const playerHandCount = document.getElementById(`hand-${data.clientId}`);
     playerHandCount.innerText =
@@ -145,8 +145,9 @@ let selectedCardId;
 //show the first player to move
 const activePlayerId = document.getElementById("active-player-id").value;
 if (clientId === Number(activePlayerId)) {
-  document.getElementsByClassName("client-hand")[0].style.border =
-    "green solid 10px";
+  document
+    .getElementsByClassName("client-hand")[0]
+    .classList.add("active-border");
 } else {
   document.getElementById(`opponent-${activePlayerId}`).style.border =
     "yellow solid 3px";
