@@ -338,6 +338,11 @@ const playCard = async (req, res) => {
         .get("io")
         .to(gameId.toString())
         .emit("is-win", { winnerName: req.session.user.username });
+
+      // game_cards and game_users set to cascade when
+      const deleteGameQuery = `DELETE FROM games WHERE id = $1`;
+      await db.none(deleteGameQuery, [gameId]);
+
       logToChat(req, gameId, `${req.session.user.username} won!`);
 
       // game_cards and game_users set to cascade when
