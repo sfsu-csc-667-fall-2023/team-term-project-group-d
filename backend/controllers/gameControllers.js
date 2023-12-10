@@ -1,5 +1,12 @@
 const db = require("../db/connection");
 
+const logToChat = (req, gameId, message) => {
+  console.log("inside lotToChat");
+  req.app
+    .get("io")
+    .emit(`chat:message:${gameId}`, { from: "System", message: message });
+};
+
 const updateActiveSeat = async (userId, gameId) => {
   const getTotalSeatsQuery = `SELECT COUNT(*) FROM game_users WHERE game_id = $1`;
   const getCurrentSeatAndDirectionQuery = `SELECT game_users.seat, games.direction
@@ -149,6 +156,7 @@ const drawCard = async (req, res) => {
         drawnColor: drawnCard[0].color,
         drawnId: drawnCard[0].id,
       });
+    logToChat(req, gameId, `${req.session.user.username} drew a card`);
     return res.status(200).send();
   } catch (error) {
     console.log("Error in updating active seat " + error);
@@ -318,7 +326,11 @@ const playCard = async (req, res) => {
     activePlayerId: activePlayerId,
     activePlayerHandSize: nextPlayerHandSize.count,
   });
-
+  logToChat(
+    req,
+    gameId,
+    `${req.session.user.username} played a ${color} ${symbol}`,
+  );
   //check the win condition
   try {
     if (await isWin(gameId, userId)) {
@@ -326,6 +338,7 @@ const playCard = async (req, res) => {
         .get("io")
         .to(gameId.toString())
         .emit("is-win", { winnerName: req.session.user.username });
+      logToChat(req, gameId, `${req.session.user.username} won!`);
       return res.status(200).send("Success!");
     }
   } catch (err) {
@@ -486,6 +499,7 @@ const joinGame = async (req, res) => {
         username: req.session.user.username,
         image: req.session.user.image,
       });
+    logToChat(req, gameId, `${req.session.user.username} joined the game`);
     return res.redirect(`/lobby/${gameId}`);
   } catch (err) {
     console.error("error occurred adding user to lobby ", err);
