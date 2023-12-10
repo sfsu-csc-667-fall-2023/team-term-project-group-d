@@ -1,30 +1,28 @@
 const express = require("express");
 const gameRouter = express.Router();
 const {
-  playCard,
   getGameState,
-  drawCard,
-  joinGame,
-  createGame,
   getUsersGames,
   startGame,
-  unoChallenge,
 } = require("../controllers/gameControllers");
+const {
+  playCard,
+  drawCard,
+  unoChallenge,
+} = require("../controllers/gameActionControllers");
 
-gameRouter.post("/:id/card/:cardId/play", playCard);
-
-gameRouter.post("/create", createGame);
-
-gameRouter.post("/:id/join", joinGame);
-
+// General Game Routes
 gameRouter.get("/getMyGames", getUsersGames);
 
 gameRouter.get("/:id", getGameState);
 
-gameRouter.post("/:id/card/draw", drawCard);
-
 gameRouter.post("/:id/start", startGame);
 
-gameRouter.post("/:id/unoAccuse", unoChallenge);
+// Game Action Routes
+gameRouter.post("/:id/card/:cardId/play", playCard);
+
+gameRouter.post("/:id/card/draw", drawCard);
+
+gameRouter.post("/:id/unoChallenge", unoChallenge);
 
 module.exports = gameRouter;

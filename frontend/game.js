@@ -238,7 +238,7 @@ drawButton.addEventListener("click", async (event) => {
 const handleUnoClick = async (e) => {
   e.preventDefault();
   try {
-    const response = await fetch(`/game/${gameId}/unoAccuse`, {
+    const response = await fetch(`/game/${gameId}/unoChallenge`, {
       method: "POST",
     });
     console.log(response);
