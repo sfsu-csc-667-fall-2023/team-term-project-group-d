@@ -3,13 +3,13 @@ const sanitizeMiddleware = require("../middleware/sanitize-input");
 const userRouter = express.Router();
 const { register, login, logout } = require("../controllers/userControllers");
 const { body } = require("express-validator");
-const { reqLoggedIn, reqLoggedOut } = require("../middleware/auth-guard");
+const { isAuthorized, notAuthorized } = require("../middleware/auth-guard");
 
 userRouter.post(
   "/register",
   [body("username").trim(), body("email").isEmail().normalizeEmail()],
   sanitizeMiddleware,
-  reqLoggedOut,
+  notAuthorized,
   register,
 );
 
@@ -17,14 +17,11 @@ userRouter.post(
   "/login",
   [body("usernameOrEmail").trim()],
   sanitizeMiddleware,
-  reqLoggedOut,
+  notAuthorized,
   login,
 );
 
-userRouter.post("/logout", reqLoggedIn, logout);
-
-// TODO: Remove /logout GET when we have a view with logout button calling /user/logout API route
-userRouter.get("/logout", reqLoggedIn, logout);
+userRouter.post("/logout", isAuthorized, logout);
 
 // For testing if sessions working
 userRouter.get("/checkauth", (req, res) => {

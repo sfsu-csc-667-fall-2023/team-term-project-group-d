@@ -53,7 +53,7 @@ io.engine.use(sessionConfig);
 app.set("io", io);
 
 io.on("connection", (socket) => {
-  if (socket.handshake.query != undefined) {
+  if (socket.handshake.query.id != undefined) {
     // join the game room
     socket.join(socket.handshake.query.id + "");
   }
@@ -63,13 +63,13 @@ io.on("connection", (socket) => {
 
 // Mount Routes
 const Routes = require("./routes");
-const { reqLoggedIn } = require("./middleware/auth-guard");
+const { isAuthorized } = require("./middleware/auth-guard");
 
 app.use("/", Routes.root);
 app.use("/user", Routes.user);
-app.use("/chat", reqLoggedIn, Routes.chat);
-app.use("/lobby", reqLoggedIn, Routes.lobby, Routes.chat);
-app.use("/game", reqLoggedIn, Routes.game, Routes.chat);
+app.use("/chat", isAuthorized, Routes.chat);
+app.use("/lobby", isAuthorized, Routes.lobby, Routes.chat);
+app.use("/game", isAuthorized, Routes.game, Routes.chat);
 
 app.use("/test", require("./routes/test"));
 
