@@ -265,8 +265,7 @@ const handleAudioClick = (e) => {
 const audioButton = document.getElementById("music-button");
 audioButton.addEventListener("click", handleAudioClick);
 
-const handleExitGame = (gameId, userId) => {
-  alert("TODO : delete game");
+const handleExitGame = () => {
   window.location.href = "/";
 };
 
