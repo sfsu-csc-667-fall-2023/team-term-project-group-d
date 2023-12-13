@@ -49,7 +49,7 @@ const displayGameInList = (game) => {
     if (game.has_password) {
       generateProtectedGameForm(game.id, game.name);
     } else {
-      await joinGame(game.id, "");
+      await joinLobby(game.id, "");
     }
   });
   joinButton.innerText = "Join";
@@ -126,10 +126,10 @@ buttonListRefresh.addEventListener("click", async () => {
   displayFilteredList();
 });
 
-/// Join Game
-const joinGame = async (gameId, password) => {
+/// Join Lobby
+const joinLobby = async (gameId, password) => {
   try {
-    const res = await fetch(`/game/${gameId}/join`, {
+    const res = await fetch(`/lobby/${gameId}/join`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -157,7 +157,7 @@ const generateProtectedGameForm = async (id, name) => {
   const button = document.getElementById("protected-game-form-button");
   button.addEventListener("click", async () => {
     const password = document.getElementById("password").value;
-    await joinGame(id, password);
+    await joinLobby(id, password);
   });
 
   const formContainer = document.getElementById("protected-game-popup");
@@ -193,7 +193,7 @@ formCreateFormButton.addEventListener("click", async (e) => {
   const max_players = document.getElementById("create-game-max-players").value;
 
   try {
-    const res = await fetch("/game/create", {
+    const res = await fetch("/lobby/create", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
