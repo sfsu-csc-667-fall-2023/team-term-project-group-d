@@ -10,7 +10,12 @@
   </head>
 
   <body>
-    <h1><%= gameName %></h1>
+    <header>
+      <h2 id="client-name"> 
+        <%= clientName %>
+      </h2>
+      <h1><%= gameName %></h1>
+    </header>
     <div class="players-container">
       <% playerList.forEach(player => { %>
       <div class="opponent-container" id="opponent-<%= player.id %>">
@@ -54,14 +59,18 @@
           <button id = "uno-button" type="submit" name="uno" value="uno">Uno</button>
           <button id = "play-button" name="play-button">Play</button>
           <button id = "music-button" name="music-button">▶️</button>
+          <div id="declare-uno-container" class="hidden">
+            Declare Uno: <input type="checkbox" name="declare-uno-button" id="declare-uno-button" />
+           </div>
         </div>
       </div>
       <%- include('partials/chat', { chatMessages: messages, roomId: gameId } ) %>
     </main>
     <div class="client-hand">
+    
       <% clientHand.forEach(card => { %>
       <img
-        class="hand-card"
+        class="hand-card outer-glow"
         cardId="<%= card.id %>"
         id="<%= 'game#' + gameId + '-card#' + card.id %>"
         src="<%= '/images/cards/' + card.color + '_' + card.symbol + '.png' %>"
