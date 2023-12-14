@@ -73,8 +73,6 @@ app.use("/chat", isAuthorized, Routes.chat);
 app.use("/lobby", isAuthorized, Routes.lobby, Routes.chat);
 app.use("/game", isAuthorized, Routes.game, Routes.chat);
 
-app.use("/test", require("./routes/test"));
-
 httpServer.listen(PORT, () => {
   console.log(`Server started on port ${PORT}`);
 });
