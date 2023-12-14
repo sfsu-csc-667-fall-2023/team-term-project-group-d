@@ -1,0 +1,21 @@
+.system-message {
+  color: brown;
+  font-weight: bold;
+  font-family: "Segoe UI", Tahoma;
+}
+
+.red {
+  color: #ff5555;
+}
+
+.green {
+  color: #55aa55;
+}
+
+.yellow {
+  color: #ffaa00;
+}
+
+.blue {
+  color: #5555ff;
+}

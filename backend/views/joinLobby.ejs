@@ -7,7 +7,7 @@
     <script>
       (async () => {
         try {
-          const res = await fetch(`/game/<%= id %>/join`, {
+          const res = await fetch(`/lobby/<%= id %>/join`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",

@@ -2,10 +2,9 @@ const gameId = Number(document.getElementById("game-id").value);
 const clientId = Number(document.getElementById("client-id").value);
 const client = document.getElementsByClassName("client-hand")[0];
 
-import { io } from "https://cdn.skypack.dev/socket.io-client"; //idk why this is necessary
+import { io } from "https://cdn.skypack.dev/socket.io-client";
 
-//sound effect that plays when anyone plays a card
-const playSound = new Audio("/music/play_card.m4a");
+const playCardSound = new Audio("/music/play_card.m4a");
 
 const hideButtons = () => {
   document.getElementById("play-button").classList.add("hidden");
@@ -17,8 +16,8 @@ const showButtons = () => {
 };
 
 const updateTurnDisplay = (clientId, activePlayerId, activePlayerHandSize) => {
-  //play the play card sound effect
-  playSound.play();
+  playCardSound.play();
+
   //update the display of the player whose turn it is
   if (clientId === activePlayerId) {
     showButtons();
@@ -27,6 +26,7 @@ const updateTurnDisplay = (clientId, activePlayerId, activePlayerHandSize) => {
       document
         .getElementById("declare-uno-container")
         .classList.remove("hidden");
+      document.getElementById("declare-uno-button").checked = false;
     } else {
       document.getElementById("declare-uno-container").classList.add("hidden");
     }
@@ -96,7 +96,6 @@ socket.on("cards-drawn", (data) => {
     );
     playerHandCount.innerText =
       Number(playerHandCount.innerText.slice(0, -1)) + data.cards.length + "X";
-    document.getElementById(`opponent-${data.clientId}`).style.border = "none";
   }
 });
 
@@ -170,7 +169,7 @@ for (let i = 0; i < hand.length; i++) {
     let secondHalfOfId = selectedId.split("-")[1]; //selectedId looks like game#15-card#11 for example
     selectedCardId = secondHalfOfId.substring(5, secondHalfOfId.length); //this gets the actual card id
     for (let j = 0; j < hand.length; j++) {
-      if (hand.item(j) != event.target)
+      if (hand.item(j) !== event.target)
         hand.item(j).classList.remove("selected");
     }
     event.target.classList.toggle("selected");
@@ -192,27 +191,31 @@ playButton.addEventListener("click", async (event) => {
     return;
   }
 
-  //TODO detect wild card. Prompt user for color
   if (selectedCard.color === "wild") {
-    cardColor = prompt("Choose a color: red, blue, green, or yellow");
+    const validColors = ["red", "green", "yellow", "blue"];
+    do {
+      cardColor = prompt("Choose a color: red, blue, green, or yellow");
+    } while (!validColors.includes(cardColor.toLowerCase()));
   }
   const body = {
-    cardId: selectedCardId,
     color: cardColor,
     symbol: selectedCard.symbol,
     isDeclared: document.getElementById("declare-uno-button").checked,
   };
   try {
-    const response = await fetch(`/game/${gameId}/card/play`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
+    const response = await fetch(
+      `/game/${gameId}/card/${selectedCardId}/play`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
       },
-      body: JSON.stringify(body),
-    });
+    );
     console.log(response);
     if (response.status === 400) {
-      console.log("its not your turn");
+      console.error("its not your turn");
       alert("It's not your turn!");
     }
   } catch (error) {
@@ -236,7 +239,7 @@ drawButton.addEventListener("click", async (event) => {
 const handleUnoClick = async (e) => {
   e.preventDefault();
   try {
-    const response = await fetch(`/game/${gameId}/unoAccuse`, {
+    const response = await fetch(`/game/${gameId}/unoChallenge`, {
       method: "POST",
     });
     console.log(response);
