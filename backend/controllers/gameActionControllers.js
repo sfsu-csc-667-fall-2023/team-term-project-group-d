@@ -298,6 +298,9 @@ const playCard = async (req, res) => {
         .to(gameId.toString())
         .emit("is-win", { winnerName: username });
       logMessageToChat(req, gameId, `${username} won!`);
+
+      const deleteGameQuery = `DELETE FROM games WHERE id = $1`;
+      await db.none(deleteGameQuery, [gameId]);
     }
 
     return res.status(StatusCodes.OK).send("Success!");
